@@ -56,7 +56,7 @@ Replace the properties `plugin.id` and `plugin.class` with your plugin name.
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.8</version>
+            <version>1.18.20</version>
             <scope>provided</scope>
         </dependency>
         
