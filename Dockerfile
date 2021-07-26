@@ -21,12 +21,6 @@ RUN	apt-get install -y mongodb-org=4.4.6
 # Define volumes - Service Layer
 VOLUME [ "/etc/letsencrypt", "/var/www/certbot", "/data/db" ]
 
-# Install yarn - Prerequisite for Application Layer
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get update
-RUN apt-get install yarn -y
-
 # Add backend server - Application Layer
 ARG JAR_FILE=./app/server/appsmith-server/target/server-*.jar
 ARG PLUGIN_JARS=./app/server/appsmith-plugins/*/target/*.jar
@@ -81,6 +75,6 @@ COPY ./deploy/heroku/default.conf.template /etc/nginx/conf.d/default.conf.templa
 # Mongodb confi - Configuration layer
 COPY ./mongo-init.js /docker-entrypoint-initdb.d/init.js
 
-EXPOSE 80
+# EXPOSE 80
 
-ENTRYPOINT [ "/bin/bash", "/bootstrap.sh" ]
+# ENTRYPOINT [ "/bin/bash", "/bootstrap.sh" ]

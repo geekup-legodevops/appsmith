@@ -17,12 +17,11 @@ start_applcation(){
 	# Start installed services - Dependencies Layer
 	exec redis-server "${ARGS}" &
 	exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
-    nginx
 
-	# Start applicaions - Application Layer
-	# cd /app
-	# exec node server.js &
-	# cd - 
+	# Create Nginx user
+	exec useradd --no-create-home nginx
+    # Start Nginx
+	exec ./start-nginx.sh
 	
     #if [[ ! -z ${maximum_heap} ]]; then
     #    backend_start_command="java -Xmx${maximum_heap}m -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
@@ -32,6 +31,11 @@ start_applcation(){
 	backend_start_command="java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
     #fi
     eval $backend_start_command
+
+	# Start applicaions - Application Layer
+	# cd /app
+	# exec node server.js &
+	# cd - 
 }
 
 # Check for enviroment vairalbes
