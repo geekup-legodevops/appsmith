@@ -74,10 +74,10 @@ COPY ./deploy/fat_container/default.conf.template /etc/nginx/conf.d/default.conf
 COPY ./mongo-init.js /docker-entrypoint-initdb.d/init.js
 
 ## Add bootstrapfile
-COPY ./bootstrap.sh /bootstrap.sh
+COPY ./bootstrap.sh bootstrap.sh
 
 EXPOSE 80
 EXPOSE 443
 
-# ENTRYPOINT [ "/bin/bash" ]
-# CMD ["/bootstrap.sh"]
+ENTRYPOINT [ "/bin/bash" ]
+CMD ["/var/www/bootstrap.sh"]

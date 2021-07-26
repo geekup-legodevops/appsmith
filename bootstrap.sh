@@ -6,24 +6,22 @@ set -e
 start_application(){
   echo "starting redis-server"
 	# Start installed services - Dependencies Layer
-	exec redis-server "${ARGS}" &
+	# exec redis-server "${ARGS}" &
 
   echo "starting mongo"
-	exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
+	# exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
 
   echo "starting Nginx"
 	# Create Nginx user
 	exec useradd --no-create-home nginx
-    # Start Nginx
-  nginx
-    #if [[ ! -z ${maximum_heap} ]]; then
-    #    backend_start_command="java -Xmx${maximum_heap}m -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
-    #else
-  set -o allexport
+  # Start Nginx
+  nginx 
+  # set -o allexport
   echo "Starting Backend"
-	backend_start_command="java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
-    #fi
-   eval $backend_start_command
+  printenv
+  pwd
+  ls -la
+	java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar
 
 }
 
