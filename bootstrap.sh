@@ -1,25 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
-function get_maximum_heap(){ 
-    resource=$(ulimit -u)
-    echo "Resource : $resource"
-    if [[ "$resource" -le 256 ]]; then
-        maximum_heap=128
-    elif [[ "$resource" -le 512 ]]; then
-        maximum_heap=256
-    fi
-}
+# function get_maximum_heap(){ 
+#     resource=$(ulimit -u)
+#     echo "Resource : $resource"
+#     if [[ "$resource" -le 256 ]]; then
+#         maximum_heap=128
+#     elif [[ "$resource" -le 512 ]]; then
+#         maximum_heap=256
+#     fi
+# }
 
 
-function start_applcation(){
+start_applcation(){
+	# Start installed services - Dependencies Layer
+	exec redis-server "${ARGS}" &
+	exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
     nginx
-    if [[ ! -z ${maximum_heap} ]]; then
-        backend_start_command="java -Xmx${maximum_heap}m -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
-    else
-        backend_start_command="java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
-    fi
+
+	# Start applicaions - Application Layer
+	# cd /app
+	# exec node server.js &
+	# cd - 
+	
+    #if [[ ! -z ${maximum_heap} ]]; then
+    #    backend_start_command="java -Xmx${maximum_heap}m -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
+    #else
+  	set -o allexport
+	source .env
+	backend_start_command="java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar"
+    #fi
     eval $backend_start_command
 }
 
@@ -52,6 +63,14 @@ cat /etc/nginx/conf.d/default.conf.template | envsubst "$(printf '$%s,' $(env | 
 
 envsubst "\$PORT" < /etc/nginx/conf.d/default.conf.template.1 > /etc/nginx/conf.d/default.conf
 
-get_maximum_heap
+#REDIS_BASE_DIR="$(whereis redis | grep -o '[^/s]*')"
+REDIS_BASE_DIR="/etc/redis"
+ARGS=("$REDIS_BASE_DIR/redis.conf" "--daemonize" "no") 
+
+MONGO_DB_PATH="/data/db"
+MONGO_LOG_PATH="$MONGO_DB_PATH/log"
+touch "$MONGO_LOG_PATH"
+
+#get_maximum_heap
 start_applcation
 

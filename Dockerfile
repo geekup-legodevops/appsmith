@@ -4,7 +4,7 @@ FROM debian:buster
 RUN apt-get update
 
 # Install services - Service Layer
-RUN apt-get install certbot nginx redis gnupg wget openjdk-11-jre -y
+RUN apt-get install certbot nginx redis gnupg wget curl gettext openjdk-11-jre -y
 
 # Install node v14 - Service Layer
 RUN wget https://nodejs.org/dist/v14.15.4/node-v14.15.4-linux-x64.tar.xz 
@@ -21,6 +21,12 @@ RUN	apt-get install -y mongodb-org=4.4.6
 # Define volumes - Service Layer
 VOLUME [ "/etc/letsencrypt", "/var/www/certbot", "/data/db" ]
 
+# Install yarn - Prerequisite for Application Layer
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt-get update
+RUN apt-get install yarn -y
+
 # Add backend server - Application Layer
 ARG JAR_FILE=./app/server/appsmith-server/target/server-*.jar
 ARG PLUGIN_JARS=./app/server/appsmith-plugins/*/target/*.jar
@@ -32,15 +38,16 @@ RUN mkdir -p /plugins
 
 #Add the jar to the container. Always keep this at the end. This is to ensure that all the things that can be taken
 #care of via the cache happens. The following statement would lead to copy because of change in hash value
-COPY ./app/server/entrypoint.sh /entrypoint.sh
 COPY ${JAR_FILE} server.jar
 COPY ${PLUGIN_JARS} /plugins/
+COPY ./app/server/.env /.env
 
 # Add client UI - Application Layer
 COPY ./app/client/build /var/www/appsmith
 
 # This is the default nginx template file inside the container. 
 # This is replaced by the install.sh script during a deployment
+# TODO: Check necessary or not, can be replaced by default.conf.template from heroku dir
 COPY ./app/client/docker/templates/nginx-app.conf.template /nginx.conf.template
 COPY ./app/client/docker/templates/nginx-root.conf.template /nginx-root.conf.template
 
@@ -49,7 +56,8 @@ COPY ./app/client/docker/start-nginx.sh /start-nginx.sh
 
 # Add RTS - Application Layer
 
-COPY ./app/rts/package.json ./app/rts/yarn.lock ./app/rts/dist/* /app/
+COPY  ./app/rts/package.json ./app/rts/yarn.lock ./app/rts/dist/* /app/
+COPY ./app/rts/node_modules /app/node_modules
 
 RUN rm -rf \
     /root/.cache \
@@ -65,10 +73,14 @@ RUN rm -rf \
     /var/lib/apt/lists/* \
     /tmp/*
 
-COPY bootstrap.sh /bootstrap.sh
+COPY ./bootstrap.sh /bootstrap.sh
+
+# Nginx config - Configuration layer
+COPY ./deploy/heroku/default.conf.template /etc/nginx/conf.d/default.conf.template
+
+# Mongodb confi - Configuration layer
+COPY ./mongo-init.js /docker-entrypoint-initdb.d/init.js
 
 EXPOSE 80
 
-ENTRYPOINT [ "/bin/sh -c" ]
-
-CMD ["/bootstrap.sh"]
+ENTRYPOINT [ "/bin/bash", "/bootstrap.sh" ]
