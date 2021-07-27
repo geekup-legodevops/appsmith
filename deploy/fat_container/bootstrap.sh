@@ -12,21 +12,22 @@ init_database() {
   dbPath=/data/mongodb
   shouldPerformInitdb='true'
   # check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
-  if [ -n "$shouldPerformInitdb" ]; then
-    for path in \
-      "$dbPath/WiredTiger" \
-      "$dbPath/journal" \
-      "$dbPath/local.0" \
-      "$dbPath/storage.bson" \
-    ; do
-      if [ -e "$path" ]; then
-        shouldPerformInitdb=
-        break
-      fi
-    done
-  fi
+  # if [ -n "$shouldPerformInitdb" ]; then
+  #   for path in \
+  #     "$dbPath/WiredTiger" \
+  #     "$dbPath/journal" \
+  #     "$dbPath/local.0" \
+  #     "$dbPath/storage.bson" \
+  #   ; do
+  #     if [ -e "$path" ]; then
+  #       shouldPerformInitdb=
+  #       break
+  #     fi
+  #   done
+  # fi
   echo "shouldPerformInitdb"
   echo $shouldPerformInitdb
+  sleep 10;
  if [ -n "$shouldPerformInitdb" ]; then
     mongo=( mongo --host 127.0.0.1 --port 27017 --quiet )
 		if [ "$MONGO_USERNAME" ] && [ "$MONGO_PASSWORD" ]; then
