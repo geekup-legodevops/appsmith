@@ -10,30 +10,27 @@ _js_escape() {
 check_initialized_db() {
   echo 'Check initialized database'
   dbPath='/data/mongodb'
-  shouldPerformInitdb='true'
+  shouldPerformInitdb=1
   #check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
-  if [ -n "$shouldPerformInitdb" ]; then
-    for path in \
-      "$dbPath/WiredTiger" \
-      "$dbPath/journal" \
-      "$dbPath/local.0" \
-      "$dbPath/storage.bson" \
-    ; do
-      if [ -e "$path" ]; then
-        shouldPerformInitdb=
-        break
-      fi
-    done
-  fi
-  echo "shouldPerformInitdb"
-  return $shouldPerformInitdb
+  for path in \
+	"$dbPath/WiredTiger" \
+	"$dbPath/journal" \
+	"$dbPath/local.0" \
+	"$dbPath/storage.bson" \
+  ; do
+	if [ -e "$path" ]; then
+	shouldPerformInitdb=0
+	return
+	fi
+  done
+  echo "Should initialize database"
 }
   
 init_database() {
   echo "Waiting 10s mongodb init"
   sleep 10;
   echo "Init database"
-  if [ -n "$shouldPerformInitdb" ]; then
+  if [[ $shouldPerformInitdb -gt 0 ]]; then
   ## Init appmsimth schema
     #TODO: generate init file from bash.sh
 	bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
@@ -55,9 +52,9 @@ start_mongodb(){
   MONGO_DB_PATH="/data/mongodb"
   MONGO_LOG_PATH="$MONGO_DB_PATH/log"
   touch "$MONGO_LOG_PATH"
-  echo "starting mongo"
+  echo "Starting mongo"
   ## check shoud init 
-  shouldPerformInitdb=check_initialized_db
+  check_initialized_db
 
   # Start installed MongoDB service - Dependencies Layer
   exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
@@ -66,24 +63,86 @@ start_mongodb(){
   init_database
 }
 
-start_editor_application(){
-  echo "Generating nginx configuration"
-  cat /etc/nginx/conf.d/default.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
-  echo "Starting Nginx"
-  # Start Nginx
-  nginx 
-}
-
 start_rts_application(){
   echo "TODO: start rts"
 }
 
+init_ssl_cert(){
+	local domain="$1"
+	NGINX_SSL_CMNT=""
+
+	local rsa_key_size=4096
+    local data_path="/data/certbot"
+	ls /etc/letsencrypt/live
+
+	if [[ -e "/etc/letsencrypt/live/$domain" ]]; then
+		echo "Existing certificate for domain $domain"
+		return
+	fi
+
+	echo "Creating certificate for '$domain'"
+
+	mkdir -p "$data_path"/{conf,www}
+
+    if ! [[ -e "$data_path/conf/options-ssl-nginx.conf" && -e "$data_path/conf/ssl-dhparams.pem" ]]; then
+        echo "Downloading recommended TLS parameters..."
+        curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf >"$data_path/conf/options-ssl-nginx.conf"
+        curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem >"$data_path/conf/ssl-dhparams.pem"
+        echo
+    fi
+
+	echo "Re-generating nginx config template with domain"
+    bash "/etc/nginx/conf.d/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+
+    echo "Generating nginx configuration"
+    cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
+
+	echo "Requesting Let's Encrypt certificate for '$domain'..."
+	echo "Generating OpenSSL key for '$domain'..."
+    
+	local live_path="/etc/letsencrypt/live/$domain"
+	mkdir -p "$live_path" && openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+		-keyout "$live_path/privkey.pem" \
+		-out "$live_path/fullchain.pem" \
+		-subj "/CN=localhost"
+
+	#reload Nginx
+	echo "Reload Nginx"
+	nginx -s reload
+
+	echo "Removing key now that validation is done for $domain..."
+	rm -Rfv /etc/letsencrypt/live/$domain /etc/letsencrypt/archive/$domain /etc/letsencrypt/renewal/$domain.conf
+    echo
+
+	echo "Generating certification for domain $domain"
+	certbot certonly --webroot --webroot-path=/var/www/certbot \
+            --register-unsafely-without-email \
+            --domains $domain \
+            --rsa-key-size $rsa_key_size \
+            --agree-tos \
+            --force-renewal
+
+	ls /etc/letsencrypt/live
+
+	echo "Reload nginx"
+	nginx -s reload
+}
+
 configure_ssl(){
-  echo "to be implement configure_ssl"
-  #check domai n& confing ssh
+  #check domain & confing ssh
+  NGINX_SSL_CMNT="#"
+
+  echo "Generating nginx config template without domain"
+  bash "/etc/nginx/conf.d/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+
+  echo "Generating nginx configuration"
+  cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
+  nginx
+  
+  if [[ -n $CUSTOM_DOMAIN ]]; then
     #then run script
-    #update ngnix domain template
-    #run certbot -> sign ssl
+	init_ssl_cert "$CUSTOM_DOMAIN"
+  fi
 }
 
 start_backend_application(){
@@ -91,9 +150,8 @@ start_backend_application(){
 }
 
 start_application(){
-  start_editor_application
   start_backend_application
-  start_rts_application
+  #start_rts_application
 }
 
 echo 'Checking env configuration'
@@ -126,5 +184,6 @@ fi
 # Main Section
 start_redis
 start_mongodb
+configure_ssl
 start_application
 

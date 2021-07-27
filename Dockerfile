@@ -66,7 +66,7 @@ COPY ./app/rts/node_modules /app/node_modules
 # ------------------------------------------------------------------------
 # Copy application configuration
 # Nginx config - Configuration layer
-COPY ./deploy/fat_container/default.conf.template /etc/nginx/conf.d/default.conf.template
+COPY ./deploy/fat_container/nginx_app.conf.sh /etc/nginx/conf.d/nginx_app.conf.sh
 # Mongodb confi - Configuration layer
 COPY ./deploy/fat_container/mongo-init.js.sh /docker-entrypoint-initdb.d/mongo-init.js.sh
 
