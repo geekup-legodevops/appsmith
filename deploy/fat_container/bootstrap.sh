@@ -10,7 +10,7 @@ _js_escape() {
 init_database() {
   echo 'init_database'
   dbPath=/data/mongodb
-  shouldPerformInitdb='true'
+  # shouldPerformInitdb='true'
   # check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
   # if [ -n "$shouldPerformInitdb" ]; then
   #   for path in \
@@ -27,22 +27,27 @@ init_database() {
   # fi
   echo "shouldPerformInitdb"
   echo $shouldPerformInitdb
-  sleep 10;
- if [ -n "$shouldPerformInitdb" ]; then
-    mongo=( mongo --host 127.0.0.1 --port 27017 --quiet )
-		if [ "$MONGO_USERNAME" ] && [ "$MONGO_PASSWORD" ]; then
-			rootAuthDatabase='admin'
-			"${mongo[@]}" "$rootAuthDatabase" <<-EOJS
-				db.createUser({
-					user: $(_js_escape "$MONGO_USERNAME"),
-					pwd: $(_js_escape "$MONGO_PASSWORD"),
-					roles: [ { role: 'r oot', db: $(_js_escape "$rootAuthDatabase") } ]
-				})
-			EOJS
-		fi
 
-		export MONGO_INITDB_DATABASE="${MONGO_INITDB_DATABASE:-test}"
-		mongo "127.0.0.1/${MONGO_INITDB_DATABASE}" /var/www/init.js
+  echo "Waiting 10s mongodb init"
+  sleep 10;
+
+  echo "Init database"
+ if [ -n "$shouldPerformInitdb" ]; then
+  ## Create user from env variable -> TODO: debug
+    # mongo=( mongo --host 127.0.0.1 --port 27017 --quiet )
+		# if [ "$MONGO_USERNAME" ] && [ "$MONGO_PASSWORD" ]; then
+		# 	rootAuthDatabase='admin'
+		# 	"${mongo[@]}" "$rootAuthDatabase" <<-EOJS
+		# 		db.createUser({
+		# 			user: $(_js_escape "$MONGO_USERNAME"),
+		# 			pwd: $(_js_escape "$MONGO_PASSWORD"),
+		# 			roles: [ { role: 'root', db: $(_js_escape "$rootAuthDatabase") } ]
+		# 		})
+		# 	EOJS
+		# fi
+  ## Init appmsimth schema
+    #TODO: generate init file from bash.sh
+		mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/init.js
  fi
 }
 
@@ -61,8 +66,10 @@ start_mongodb(){
   MONGO_LOG_PATH="$MONGO_DB_PATH/log"
   touch "$MONGO_LOG_PATH"
   echo "starting mongo"
+  ## check shoud init 
+  #varaible=check_int
 	exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
-  # Check & init database schema
+  # Run logic int database schema
   init_database
 }
 
@@ -80,6 +87,10 @@ start_rts_application(){
 
 configure_ssl(){
   echo "to be implement configure_ssl"
+  #check domai n& confing ssh
+    #then run script
+    #update ngnix domain template
+    #run certbot -> sign ssl
 }
 
 start_backend_application(){
@@ -89,6 +100,7 @@ start_backend_application(){
 start_application(){
   start_editor_application
   start_backend_application
+  start_rts_application
 }
 
 echo 'Checking env configuration'
@@ -121,5 +133,5 @@ fi
 # Main Section
 start_redis
 start_mongodb
-#start_application
+start_application
 

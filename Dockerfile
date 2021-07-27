@@ -80,4 +80,4 @@ RUN chmod +x bootstrap.sh
 EXPOSE 80
 EXPOSE 443
 # ENTRYPOINT [ "/bin/bash" ]
-# CMD ["/var/www/bootstrap.sh"]
+CMD ["/var/www/bootstrap.sh"]
