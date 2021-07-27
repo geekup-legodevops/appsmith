@@ -7,47 +7,37 @@ _js_escape() {
 	jq --null-input --arg 'str' "$1" '$str'
 }
 
-init_database() {
-  echo 'init_database'
-  dbPath=/data/mongodb
-  # shouldPerformInitdb='true'
-  # check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
-  # if [ -n "$shouldPerformInitdb" ]; then
-  #   for path in \
-  #     "$dbPath/WiredTiger" \
-  #     "$dbPath/journal" \
-  #     "$dbPath/local.0" \
-  #     "$dbPath/storage.bson" \
-  #   ; do
-  #     if [ -e "$path" ]; then
-  #       shouldPerformInitdb=
-  #       break
-  #     fi
-  #   done
-  # fi
+check_initialized_db() {
+  echo 'Check initialized database'
+  dbPath='/data/mongodb'
+  shouldPerformInitdb='true'
+  #check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
+  if [ -n "$shouldPerformInitdb" ]; then
+    for path in \
+      "$dbPath/WiredTiger" \
+      "$dbPath/journal" \
+      "$dbPath/local.0" \
+      "$dbPath/storage.bson" \
+    ; do
+      if [ -e "$path" ]; then
+        shouldPerformInitdb=
+        break
+      fi
+    done
+  fi
   echo "shouldPerformInitdb"
-  echo $shouldPerformInitdb
-
+  return $shouldPerformInitdb
+}
+  
+init_database() {
   echo "Waiting 10s mongodb init"
   sleep 10;
-
   echo "Init database"
- if [ -n "$shouldPerformInitdb" ]; then
-  ## Create user from env variable -> TODO: debug
-    # mongo=( mongo --host 127.0.0.1 --port 27017 --quiet )
-		# if [ "$MONGO_USERNAME" ] && [ "$MONGO_PASSWORD" ]; then
-		# 	rootAuthDatabase='admin'
-		# 	"${mongo[@]}" "$rootAuthDatabase" <<-EOJS
-		# 		db.createUser({
-		# 			user: $(_js_escape "$MONGO_USERNAME"),
-		# 			pwd: $(_js_escape "$MONGO_PASSWORD"),
-		# 			roles: [ { role: 'root', db: $(_js_escape "$rootAuthDatabase") } ]
-		# 		})
-		# 	EOJS
-		# fi
+  if [ -n "$shouldPerformInitdb" ]; then
   ## Init appmsimth schema
     #TODO: generate init file from bash.sh
-		mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/init.js
+	bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
+	mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/mongo-init.js
  fi
 }
 
@@ -67,8 +57,11 @@ start_mongodb(){
   touch "$MONGO_LOG_PATH"
   echo "starting mongo"
   ## check shoud init 
-  #varaible=check_int
-	exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
+  shouldPerformInitdb=check_initialized_db
+
+  # Start installed MongoDB service - Dependencies Layer
+  exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
+  
   # Run logic int database schema
   init_database
 }

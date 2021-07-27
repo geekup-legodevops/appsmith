@@ -68,7 +68,7 @@ COPY ./app/rts/node_modules /app/node_modules
 # Nginx config - Configuration layer
 COPY ./deploy/fat_container/default.conf.template /etc/nginx/conf.d/default.conf.template
 # Mongodb confi - Configuration layer
-COPY ./deploy/fat_container/mongo-init.js /docker-entrypoint-initdb.d/init.js
+COPY ./deploy/fat_container/mongo-init.js.sh /docker-entrypoint-initdb.d/mongo-init.js.sh
 
 ## Add bootstrapfile
 COPY ./deploy/fat_container/init_database.sh init_database.sh
