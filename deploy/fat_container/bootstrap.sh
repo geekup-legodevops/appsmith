@@ -34,10 +34,20 @@ init_database() {
   sleep 10;
   echo "Init database"
   if [ -n "$shouldPerformInitdb" ]; then
-  ## Init appmsimth schema
     #TODO: generate init file from bash.sh
 	bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
 	mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/mongo-init.js
+  echo "Seeding db done"
+
+  # Mongodb start
+  echo "Enable replica set"
+  mongod --dbpath /data/mongodb --shutdown  || true
+  echo "Fork process"
+  openssl rand -base64 756 > /data/mongodb/key
+  chmod go-rwx,u-wx /data/mongodb/key
+  mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
+  sleep 10;
+  mongo mongodb://appsmith:appsmith@localhost/appsmith --eval 'rs.initiate()'
  fi
 }
 
@@ -55,13 +65,11 @@ start_mongodb(){
   MONGO_DB_PATH="/data/mongodb"
   MONGO_LOG_PATH="$MONGO_DB_PATH/log"
   touch "$MONGO_LOG_PATH"
-  echo "starting mongo"
+  echo "Starting mongo"
   ## check shoud init 
   shouldPerformInitdb=check_initialized_db
-
   # Start installed MongoDB service - Dependencies Layer
-  exec mongod --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" &
-  
+  mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log
   # Run logic int database schema
   init_database
 }
@@ -75,7 +83,7 @@ start_editor_application(){
 }
 
 start_rts_application(){
-  echo "TODO: start rts"
+  cd /app && node server.js
 }
 
 configure_ssl(){
@@ -87,7 +95,7 @@ configure_ssl(){
 }
 
 start_backend_application(){
-  java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar
+  java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
 }
 
 start_application(){
