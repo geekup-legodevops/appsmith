@@ -30,32 +30,29 @@ init_database() {
   echo "Waiting 10s mongodb init"
   sleep 10;
   echo "Init database"
-  if [[ $shouldPerformInitdb -gt 0 ]]; then
   ## Init appmsimth schema
-    #TODO: generate init file from bash.sh
-	bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
-	mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/mongo-init.js
+  bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
+  mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/mongo-init.js
   echo "Seeding db done"
 
   # Mongodb start
   echo "Enable replica set"
-  mongod --dbpath /data/mongodb --shutdown  || true
+  mongod --dbpath /data/mongodb --shutdown || true
   echo "Fork process"
   openssl rand -base64 756 > /data/mongodb/key
   chmod go-rwx,u-wx /data/mongodb/key
   mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
   sleep 10;
-  mongo mongodb://appsmith:appsmith@localhost/appsmith --eval 'rs.initiate()'
- fi
+  mongo mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@localhost:27017/$MONGO_DATABASE --eval 'rs.initiate()'
 }
 
 start_redis(){
   echo 'Update Redis config'
   REDIS_BASE_DIR="/etc/redis"
   ARGS=("$REDIS_BASE_DIR/redis.conf" "--daemonize" "no") 
-  echo "starting redis-server"
-	# Start installed services - Dependencies Layer
-	exec redis-server "${ARGS}" &
+  echo "Starting redis-server"
+  # Start installed services - Dependencies Layer
+  exec redis-server "${ARGS}" &
 }
 
 start_mongodb(){
@@ -66,15 +63,15 @@ start_mongodb(){
   echo "Starting mongo"
   ## check shoud init 
   check_initialized_db
-
-  # Start installed MongoDB service - Dependencies Layer
-  mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log
-  # Run logic int database schema
-  init_database
-}
-
-start_rts_application(){
-  cd /app && node server.js
+  
+  if [[ $shouldPerformInitdb -gt 0 ]]; then
+	# Start installed MongoDB service - Dependencies Layer
+	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log
+	# Run logic int database schema
+	init_database
+  else
+	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
+  fi
 }
 
 init_ssl_cert(){
@@ -83,7 +80,6 @@ init_ssl_cert(){
 
 	local rsa_key_size=4096
     local data_path="/data/certbot"
-	ls /etc/letsencrypt/live
 
 	if [[ -e "/etc/letsencrypt/live/$domain" ]]; then
 		echo "Existing certificate for domain $domain"
@@ -132,8 +128,6 @@ init_ssl_cert(){
             --agree-tos \
             --force-renewal
 
-	ls /etc/letsencrypt/live
-
 	echo "Reload nginx"
 	nginx -s reload
 }
@@ -159,9 +153,13 @@ start_backend_application(){
   java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
 }
 
+start_rts_application(){
+  cd /app && node server.js
+}
+
 start_application(){
   start_backend_application
-  #start_rts_application
+  start_rts_application
 }
 
 echo 'Checking env configuration'

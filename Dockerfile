@@ -49,22 +49,12 @@ COPY ${PLUGIN_JARS} plugins/
 # Add client UI - Application Layer
 COPY ./app/client/build /var/www/appsmith
 
-# This is the default nginx template file inside the container. 
-# This is replaced by the install.sh script during a deployment
-# TODO: Check necessary or not, can be replaced by default.conf.template from heroku dir
-COPY ./app/client/docker/templates/nginx-app.conf.template /nginx.conf.template
-COPY ./app/client/docker/templates/nginx-root.conf.template /nginx-root.conf.template
-
-# This is the script that is used to start Nginx when the Docker container starts
-COPY ./app/client/docker/start-nginx.sh /start-nginx.sh
-
 # ------------------------------------------------------------------------
 # Add RTS - Application Layer
 COPY  ./app/rts/package.json ./app/rts/yarn.lock ./app/rts/dist/* /app/
 COPY ./app/rts/node_modules /app/node_modules
 
 # ------------------------------------------------------------------------
-# Copy application configuration
 # Nginx config - Configuration layer
 COPY ./deploy/fat_container/nginx_app.conf.sh /etc/nginx/conf.d/nginx_app.conf.sh
 # Mongodb confi - Configuration layer
