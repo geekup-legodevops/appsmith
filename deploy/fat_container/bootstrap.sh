@@ -27,8 +27,6 @@ check_initialized_db() {
 }
   
 init_database() {
-  echo "Waiting 10s mongodb init"
-  sleep 10;
   echo "Init database"
   ## Init appmsimth schema
   bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
@@ -42,6 +40,7 @@ init_database() {
   openssl rand -base64 756 > /data/mongodb/key
   chmod go-rwx,u-wx /data/mongodb/key
   mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
+  echo "Waiting 10s for mongodb init with replica set"
   sleep 10;
   mongo mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@localhost:27017/$MONGO_DATABASE --eval 'rs.initiate()'
 }
@@ -67,10 +66,14 @@ start_mongodb(){
   if [[ $shouldPerformInitdb -gt 0 ]]; then
 	# Start installed MongoDB service - Dependencies Layer
 	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log
+	echo "Waiting 10s for mongodb init"
+	sleep 10;
 	# Run logic int database schema
 	init_database
   else
 	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
+  	echo "Waiting 10s for mongodb init with replica set"
+  	sleep 10;
   fi
 }
 
@@ -80,13 +83,6 @@ init_ssl_cert(){
 
 	local rsa_key_size=4096
     local data_path="/data/certbot"
-
-	if [[ -e "/etc/letsencrypt/live/$domain" ]]; then
-		echo "Existing certificate for domain $domain"
-		return
-	fi
-
-	echo "Creating certificate for '$domain'"
 
 	mkdir -p "$data_path"/{conf,www}
 
@@ -102,6 +98,14 @@ init_ssl_cert(){
 
     echo "Generating nginx configuration"
     cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
+
+	if [[ -e "/etc/letsencrypt/live/$domain" ]]; then
+		echo "Existing certificate for domain $domain"
+		nginx -s reload
+		return
+	fi
+
+	echo "Creating certificate for '$domain'"
 
 	echo "Requesting Let's Encrypt certificate for '$domain'..."
 	echo "Generating OpenSSL key for '$domain'..."
