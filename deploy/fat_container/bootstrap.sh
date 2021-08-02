@@ -2,10 +2,10 @@
 
 set -e
 
-# _js_escape 'some "string" value'
-_js_escape() {
-	jq --null-input --arg 'str' "$1" '$str'
-}
+# # _js_escape 'some "string" value'
+# _js_escape() {
+# 	jq --null-input --arg 'str' "$1" '$str'
+# }
 
 check_initialized_db() {
   echo 'Check initialized database'
