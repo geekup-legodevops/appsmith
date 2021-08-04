@@ -9,80 +9,81 @@ set -e
 
 check_initialized_db() {
   echo 'Check initialized database'
-  dbPath='/data/mongodb'
   shouldPerformInitdb=1
   #check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
   for path in \
-	"$dbPath/WiredTiger" \
-	"$dbPath/journal" \
-	"$dbPath/local.0" \
-	"$dbPath/storage.bson" \
+	"$MONGO_DB_PATH/WiredTiger" \
+	"$MONGO_DB_PATH/journal" \
+	"$MONGO_DB_PATH/local.0" \
+	"$MONGO_DB_PATH/storage.bson" \
   ; do
 	if [ -e "$path" ]; then
-	shouldPerformInitdb=0
-	return
+	  shouldPerformInitdb=0
+	  return
 	fi
   done
   echo "Should initialize database"
 }
   
-init_database() {
+init_mongodb() {
   echo "Init database"
-  ## Init appmsimth schema
-  bash "/docker-entrypoint-initdb.d/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/docker-entrypoint-initdb.d/mongo-init.js"
-  mongo "127.0.0.1/${MONGO_DATABASE}" /docker-entrypoint-initdb.d/mongo-init.js
-  echo "Seeding db done"
-
-  # Mongodb start
-  echo "Enable replica set"
-  mongod --dbpath /data/mongodb --shutdown || true
-  echo "Fork process"
-  openssl rand -base64 756 > /data/mongodb/key
-  chmod go-rwx,u-wx /data/mongodb/key
-  mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
-  echo "Waiting 10s for mongodb init with replica set"
-  sleep 10;
-  mongo mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@localhost:27017/$MONGO_DATABASE --eval 'rs.initiate()'
-}
-
-start_redis(){
-  echo 'Update Redis config'
-  REDIS_BASE_DIR="/etc/redis"
-  ARGS=("$REDIS_BASE_DIR/redis.conf" "--daemonize" "no") 
-  echo "Starting redis-server"
-  # Start installed services - Dependencies Layer
-  exec redis-server "${ARGS}" &
-}
-
-start_mongodb(){
-  echo 'Update Mongo config'
-  MONGO_DB_PATH="/data/mongodb"
+  MONGO_DB_PATH="/opt/appsmith/data/mongodb"
   MONGO_LOG_PATH="$MONGO_DB_PATH/log"
+  MONGO_DB_KEY="$MONGO_DB_PATH/key"
   touch "$MONGO_LOG_PATH"
-  echo "Starting mongo"
   ## check shoud init 
   check_initialized_db
-  
+  ## Init appmsimth schema
   if [[ $shouldPerformInitdb -gt 0 ]]; then
 	# Start installed MongoDB service - Dependencies Layer
-	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log
+	mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH"
 	echo "Waiting 10s for mongodb init"
 	sleep 10;
-	# Run logic int database schema
-	init_database
-  else
-	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
-  	echo "Waiting 10s for mongodb init with replica set"
-  	sleep 10;
+    bash "/opt/appsmith/configuration/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/opt/appsmith/configuration/mongo-init.js"
+    mongo "127.0.0.1/${MONGO_DATABASE}" /opt/appsmith/configuration/mongo-init.js
+    echo "Seeding db done"
+
+    # Mongodb start
+    echo "Enable replica set"
+    mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
+    echo "Fork process"
+    openssl rand -base64 756 > "$MONGO_DB_KEY"
+    chmod go-rwx,u-wx "$MONGO_DB_KEY"
+    mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" --replSet mr1 --keyFile "$MONGO_DB_KEY" --bind_ip localhost
+    echo "Waiting 10s for mongodb init with replica set"
+    sleep 10;
+    mongo mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@localhost:27017/$MONGO_DATABASE --eval 'rs.initiate()'
+    mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
   fi
 }
+
+# start_redis(){
+#   echo 'Update Redis config'
+#   REDIS_BASE_DIR="/etc/redis"
+#   ARGS=("$REDIS_BASE_DIR/redis.conf" "--daemonize" "no") 
+#   echo "Starting redis-server"
+#   # Start installed services - Dependencies Layer
+#   exec redis-server "${ARGS}" &
+# }
+
+# start_mongodb(){
+  
+  
+# 	# Run logic int database schema
+# 	init_database
+# #   else
+# # 	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
+# #   	echo "Waiting 10s for mongodb init with replica set"
+# #   	sleep 10;
+#   fi
+# }
 
 init_ssl_cert(){
 	local domain="$1"
 	NGINX_SSL_CMNT=""
 
 	local rsa_key_size=4096
-    local data_path="/data/certbot"
+    local data_path="/opt/appsmith/data"
 
 	mkdir -p "$data_path"/{conf,www}
 
@@ -94,7 +95,7 @@ init_ssl_cert(){
     fi
 
 	echo "Re-generating nginx config template with domain"
-    bash "/etc/nginx/conf.d/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+    bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
     echo "Generating nginx configuration"
     cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
@@ -141,7 +142,7 @@ configure_ssl(){
   NGINX_SSL_CMNT="#"
 
   echo "Generating nginx config template without domain"
-  bash "/etc/nginx/conf.d/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+  bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
   echo "Generating nginx configuration"
   cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
@@ -151,20 +152,21 @@ configure_ssl(){
     #then run script
 	init_ssl_cert "$CUSTOM_DOMAIN"
   fi
+  nginx -s stop
 }
 
-start_backend_application(){
-  java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
-}
+# start_backend_application(){
+#   java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
+# }
 
-start_rts_application(){
-  cd /app && node server.js
-}
+# start_rts_application(){
+#   cd /app && node server.js
+# }
 
-start_application(){
-  start_backend_application
-  start_rts_application
-}
+# start_application(){
+#   start_backend_application
+#   start_rts_application
+# }
 
 echo 'Checking env configuration'
 # Check for enviroment vairalbes
@@ -194,8 +196,8 @@ fi
 
 
 # Main Section
-start_redis
-start_mongodb
+#start_redis
+init_mongodb
 configure_ssl
-start_application
-
+#start_application
+/usr/bin/supervisord -n

@@ -18,7 +18,7 @@ $NGINX_SSL_CMNT    server_name $custom_domain ;
 
     gzip on;
 
-    root /var/www/appsmith;
+    root /opt/appsmith/editor;
     index index.html index.htm;
 
     location /.well-known/acme-challenge/ {
@@ -93,7 +93,7 @@ $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Proto \$scheme;
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Host \$host;
 $NGINX_SSL_CMNT
-$NGINX_SSL_CMNT    root /var/www/appsmith;
+$NGINX_SSL_CMNT    root /opt/appsmith/editor;
 $NGINX_SSL_CMNT    index index.html index.htm;
 $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    location / {
