@@ -168,6 +168,10 @@ configure_ssl(){
 #   start_rts_application
 # }
 
+echo 'Load environment variables'
+set -o allexport
+. /opt/appsmith/fat_container.env
+set +o allexport
 echo 'Checking env configuration'
 # Check for enviroment vairalbes
 if [[ -z "${APPSMITH_MAIL_ENABLED}" ]]; then
@@ -200,4 +204,4 @@ fi
 init_mongodb
 configure_ssl
 #start_application
-/usr/bin/supervisord -n
+exec "$@"

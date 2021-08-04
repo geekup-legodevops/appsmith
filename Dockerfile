@@ -65,7 +65,7 @@ COPY ./deploy/fat_container/templates/nginx_app.conf.sh configuration/nginx_app.
 COPY ./deploy/fat_container/templates/mongo-init.js.sh configuration/mongo-init.js.sh
 
 # Add bootstrapfile
-COPY ./deploy/fat_container/entrypoint.sh entrypoint.sh
+COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/fat_container.env ./
 
 COPY ./deploy/fat_container/templates/supervisord/* /etc/supervisor/conf.d/
 
@@ -74,4 +74,4 @@ RUN chmod +x entrypoint.sh
 EXPOSE 80
 EXPOSE 443
 ENTRYPOINT [ "/opt/appsmith/entrypoint.sh" ]
-# CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord" ,"-n"]
