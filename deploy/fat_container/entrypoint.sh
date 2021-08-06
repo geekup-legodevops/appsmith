@@ -83,7 +83,7 @@ init_ssl_cert(){
 	NGINX_SSL_CMNT=""
 
 	local rsa_key_size=4096
-    local data_path="/opt/appsmith/data"
+    local data_path="/opt/appsmith/data/certificate"
 
 	mkdir -p "$data_path"/{conf,www}
 
@@ -100,7 +100,8 @@ init_ssl_cert(){
     echo "Generating nginx configuration"
     cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
 
-	if [[ -e "/etc/letsencrypt/live/$domain" ]]; then
+	local live_path="/etc/letsencrypt/live/$domain"
+	if [[ -e "$live_path" ]]; then
 		echo "Existing certificate for domain $domain"
 		nginx -s reload
 		return
@@ -111,13 +112,13 @@ init_ssl_cert(){
 	echo "Requesting Let's Encrypt certificate for '$domain'..."
 	echo "Generating OpenSSL key for '$domain'..."
     
-	local live_path="/etc/letsencrypt/live/$domain"
 	mkdir -p "$live_path" && openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
 		-keyout "$live_path/privkey.pem" \
 		-out "$live_path/fullchain.pem" \
 		-subj "/CN=localhost"
 
 	#reload Nginx
+	echo
 	echo "Reload Nginx"
 	nginx -s reload
 
@@ -126,7 +127,7 @@ init_ssl_cert(){
     echo
 
 	echo "Generating certification for domain $domain"
-	certbot certonly --webroot --webroot-path=/var/www/certbot \
+	certbot certonly --webroot --webroot-path="$data_path/certbot" \
             --register-unsafely-without-email \
             --domains $domain \
             --rsa-key-size $rsa_key_size \
@@ -168,11 +169,16 @@ configure_ssl(){
 #   start_rts_application
 # }
 
-echo 'Load environment variables'
+echo 'Checking existing configuration file'
+if ! [[ -e "/opt/appsmith/docker.env" ]]; then
+	echo "Generating configuration environment file"
+	bash "/opt/appsmith/configuration/docker.env.sh" > "/opt/appsmith/docker.env"
+fi
+echo 'Load environment configuration'
 set -o allexport
-. /opt/appsmith/fat_container.env
+. /opt/appsmith/docker.env
 set +o allexport
-echo 'Checking env configuration'
+echo 'Checking environment configuration'
 # Check for enviroment vairalbes
 if [[ -z "${APPSMITH_MAIL_ENABLED}" ]]; then
     unset APPSMITH_MAIL_ENABLED # If this field is empty is might cause application crash

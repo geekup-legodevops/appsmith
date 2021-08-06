@@ -22,7 +22,8 @@ $NGINX_SSL_CMNT    server_name $custom_domain ;
     index index.html index.htm;
 
     location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
+        # root /var/www/certbot;
+		root /opt/appsmith/data/certificate/certbot;
     }
 
     proxy_set_header X-Forwarded-Proto \$scheme;
@@ -87,8 +88,8 @@ $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    ssl_certificate /etc/letsencrypt/live/$custom_domain/fullchain.pem;
 $NGINX_SSL_CMNT    ssl_certificate_key /etc/letsencrypt/live/$custom_domain/privkey.pem;
 $NGINX_SSL_CMNT
-$NGINX_SSL_CMNT    include /data/certbot/conf/options-ssl-nginx.conf;
-$NGINX_SSL_CMNT    ssl_dhparam /data/certbot/conf/ssl-dhparams.pem;
+$NGINX_SSL_CMNT    include /opt/appsmith/data/certificate/conf/options-ssl-nginx.conf;
+$NGINX_SSL_CMNT    ssl_dhparam /opt/appsmith/data/certificate/conf/ssl-dhparams.pem;
 $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Proto \$scheme;
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Host \$host;

@@ -1,6 +1,8 @@
-# Rename this to .env
-# Note: Please donot include quotes (double or single) in the values
+#!/bin/bash
 
+set -o nounset
+
+cat <<EOF
 # Sentry
 APPSMITH_SENTRY_DSN=
 
@@ -78,3 +80,4 @@ APPSMITH_ENCRYPTION_PASSWORD=abcd
 APPSMITH_ENCRYPTION_SALT=abcd
 
 CUSTOM_DOMAIN=
+EOF
