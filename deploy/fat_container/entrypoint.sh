@@ -171,4 +171,18 @@ fi
 init_mongodb
 configure_ssl
 # Run CMD
-exec "$@"
+echo "the $1 eats a $2 every time there is a $3"
+# Handle CMD command
+case $1 in
+   "export-db")
+      echo "Trigger export internal db"
+      bash -c "/opt/appsmith/export-db.sh"
+      ;;
+   pattern2)
+      echo "Trigger import intenal db"
+      bash -c "/opt/appsmith/import-db.sh"
+      ;;
+   *)
+     exec "$@"
+     ;;
+esac

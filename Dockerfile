@@ -63,7 +63,7 @@ COPY ./deploy/fat_container/templates/nginx_app.conf.sh ./deploy/fat_container/t
 # COPY ./deploy/fat_container/templates/mongo-init.js.sh configuration/mongo-init.js.sh
 
 # Add bootstrapfile
-COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts/renew-certificate.sh ./
+COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts ./
 
 # Add process config to be run by supervisord
 COPY ./deploy/fat_container/templates/supervisord.conf /etc/supervisor/supervisord.conf
@@ -73,7 +73,7 @@ COPY ./deploy/fat_container/templates/supervisord/* /etc/supervisor/conf.d/
 COPY ./deploy/fat_container/templates/cron.d /etc/cron.d/
 RUN chmod 0644 /etc/cron.d/*
 
-RUN chmod +x entrypoint.sh renew-certificate.sh
+RUN chmod +x entrypoint.sh renew-certificate.sh export-db.sh import-db.sh
 
 EXPOSE 80
 EXPOSE 443
