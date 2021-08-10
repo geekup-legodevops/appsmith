@@ -73,6 +73,11 @@ COPY ./deploy/fat_container/templates/supervisord/* /etc/supervisor/conf.d/
 COPY ./deploy/fat_container/templates/cron.d /etc/cron.d/
 RUN chmod 0644 /etc/cron.d/*
 
+### Add utils scripts
+RUN mkdir -p /opt/appsmith/utils
+
+COPY ./deploy/fat_container/utils/* /opt/appsmith/utils/
+
 RUN chmod +x entrypoint.sh renew-certificate.sh export-db.sh import-db.sh
 
 EXPOSE 80
