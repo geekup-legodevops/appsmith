@@ -63,8 +63,8 @@ COPY ./deploy/fat_container/templates/nginx_app.conf.sh ./deploy/fat_container/t
 # COPY ./deploy/fat_container/templates/mongo-init.js.sh configuration/mongo-init.js.sh
 
 # Add bootstrapfile
-COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts ./
-
+COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts/* ./deploy/fat_container/utils/db-handler/*-db.js ./
+COPY ./deploy/fat_container/utils/db-handler/node_modules ./node_modules
 # Add process config to be run by supervisord
 COPY ./deploy/fat_container/templates/supervisord.conf /etc/supervisor/supervisord.conf
 COPY ./deploy/fat_container/templates/supervisord/* /etc/supervisor/conf.d/

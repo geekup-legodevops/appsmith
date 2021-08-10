@@ -69,6 +69,7 @@ APPSMITH_RECAPTCHA_ENABLED=
 MONGO_USERNAME=appsmith
 MONGO_PASSWORD=appsmith
 MONGO_DATABASE=appsmith
+MONGO_HOST=localhost:27017
 APPSMITH_MONGODB_URI=mongodb://appsmith:appsmith@localhost/appsmith
 APPSMITH_API_BASE_URL=http://localhost:8080
 
