@@ -1,26 +1,21 @@
 // Init function export mongodb
 var shell = require('shelljs')
-var mongojs = require('mongojs')
-var db = mongojs('username:password@localhost:27017/sampleDB')
+
+// Load env configuration
+const MONGO_HOST = process.env.MONGO_HOST
+const MONGO_USERNAME= process.env.MONGO_USERNAME
+const MONGO_PASSWORD= process.env.MONGO_PASSWORD
+const MONGO_DATABASE= process.env.MONGO_DATABASE
 
 async function export_database() {
-  db.getCollectionNames(function (err, names) {
-    if (err) {
-      console.log(err)
-      process.exit(1)
+  const cmd = `mongodump --host=${MONGO_HOST} --username=${MONGO_USERNAME} --password=${MONGO_PASSWORD} --db=${MONGO_DATABASE} --archive=/opt/appsmith/data/mongodb --gzip`
+  console.log('executing: ' + cmd)
+  shell.exec(cmd, function (code, stdout, stderr) {
+    if (code != 0) {
+    console.error('Error: ' + code)
+    console.log('Program output:', stdout)
+    console.log('Program stderr:', stderr)
     }
-    names.forEach((name) => {
-      var cmd = 'mongoimport --db sampleDB --collection ' + name + ' --type json --file D:\\' + name + '.json'
-      console.log('executing: ' + cmd)
-      shell.exec(cmd, function (code, stdout, stderr) {
-        if (code != 0) {
-          console.error('Error: ' + code)
-          console.log('Program output:', stdout)
-          console.log('Program stderr:', stderr)
-        }
-      })
-    })
-    process.exit(0)
   })
 }
 
