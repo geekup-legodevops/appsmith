@@ -10,12 +10,12 @@ if [[ -n $CUSTOM_DOMAIN ]]; then
 	data_path="/opt/appsmith/data/certificate"
 	domain="$CUSTOM_DOMAIN"
 	rsa_key_size=4096
-
-	echo "Re-generating certification for domain $domain"
+	
 	certbot certonly --webroot --webroot-path="$data_path/certbot" \
 		--register-unsafely-without-email \
 		--domains $domain \
 		--rsa-key-size $rsa_key_size \
 		--agree-tos \
 		--force-renewal
+	supervisorctl restart editor
 fi

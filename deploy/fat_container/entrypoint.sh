@@ -52,7 +52,7 @@ init_mongodb() {
     mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" --replSet mr1 --keyFile "$MONGO_DB_KEY" --bind_ip localhost
     echo "Waiting 10s for mongodb init with replica set"
     sleep 10;
-    mongo mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@localhost:27017/$MONGO_DATABASE --eval 'rs.initiate()'
+    mongo "$APPSMITH_MONGODB_URI" --eval 'rs.initiate()'
     mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
   fi
 }
@@ -156,6 +156,21 @@ configure_ssl(){
   nginx -s stop
 }
 
+configure_supervisord(){
+	SUPERVISORD_CONF_PATH="/opt/appsmith/configuration/supervisord"
+	if [ -e "/etc/supervisor/conf.d/"*.conf ]; then
+		rm "/etc/supervisor/conf.d/"*
+	fi
+
+	cp -f "$SUPERVISORD_CONF_PATH/application_process/"*.conf /etc/supervisor/conf.d
+	if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:appsmith@localhost/appsmith" ]]; then
+		cp "$SUPERVISORD_CONF_PATH/mongodb.conf" /etc/supervisor/conf.d/
+	fi
+	if [[ "$APPSMITH_REDIS_URL" = "redis://127.0.0.1:6379" ]]; then
+		cp "$SUPERVISORD_CONF_PATH/redis.conf" /etc/supervisor/conf.d/
+	fi
+}
+
 # start_backend_application(){
 #   java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
 # }
@@ -174,12 +189,14 @@ if ! [[ -e "/opt/appsmith/docker.env" ]]; then
 	echo "Generating configuration environment file"
 	bash "/opt/appsmith/configuration/docker.env.sh" > "/opt/appsmith/docker.env"
 fi
+
 echo 'Load environment configuration'
 set -o allexport
 . /opt/appsmith/docker.env
 set +o allexport
-echo 'Checking environment configuration'
+
 # Check for enviroment vairalbes
+echo 'Checking environment configuration'
 if [[ -z "${APPSMITH_MAIL_ENABLED}" ]]; then
     unset APPSMITH_MAIL_ENABLED # If this field is empty is might cause application crash
 fi
@@ -210,4 +227,5 @@ fi
 init_mongodb
 configure_ssl
 #start_application
+configure_supervisord
 exec "$@"
