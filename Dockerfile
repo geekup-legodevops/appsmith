@@ -32,7 +32,7 @@ RUN wget -O /tmp/node-v14.15.4-linux-x64.tar.xz https://nodejs.org/dist/v14.15.4
 
 
 # Define volumes - Service Layer
-VOLUME [ "opt/appsmith/data", "/etc/letsencrypt" ]
+VOLUME [ "/opt/appsmith/data", "/etc/letsencrypt" ]
 # ------------------------------------------------------------------------
 # Add backend server - Application Layer
 ARG JAR_FILE=./app/server/appsmith-server/target/server-*.jar

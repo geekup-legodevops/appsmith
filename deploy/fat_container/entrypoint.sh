@@ -2,11 +2,6 @@
 
 set -e
 
-# # _js_escape 'some "string" value'
-# _js_escape() {
-# 	jq --null-input --arg 'str' "$1" '$str'
-# }
-
 check_initialized_db() {
   echo 'Check initialized database'
   shouldPerformInitdb=1
@@ -30,6 +25,7 @@ init_mongodb() {
   MONGO_DB_PATH="/opt/appsmith/data/mongodb"
   MONGO_LOG_PATH="$MONGO_DB_PATH/log"
   MONGO_DB_KEY="$MONGO_DB_PATH/key"
+  mkdir -p "$MONGO_DB_PATH"
   touch "$MONGO_LOG_PATH"
   ## check shoud init 
   check_initialized_db
@@ -56,27 +52,6 @@ init_mongodb() {
     mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
   fi
 }
-
-# start_redis(){
-#   echo 'Update Redis config'
-#   REDIS_BASE_DIR="/etc/redis"
-#   ARGS=("$REDIS_BASE_DIR/redis.conf" "--daemonize" "no") 
-#   echo "Starting redis-server"
-#   # Start installed services - Dependencies Layer
-#   exec redis-server "${ARGS}" &
-# }
-
-# start_mongodb(){
-  
-  
-# 	# Run logic int database schema
-# 	init_database
-# #   else
-# # 	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
-# #   	echo "Waiting 10s for mongodb init with replica set"
-# #   	sleep 10;
-#   fi
-# }
 
 init_ssl_cert(){
 	local domain="$1"
@@ -223,9 +198,9 @@ fi
 
 
 # Main Section
-#start_redis
 init_mongodb
 configure_ssl
 #start_application
 configure_supervisord
+# Run CMD
 exec "$@"
