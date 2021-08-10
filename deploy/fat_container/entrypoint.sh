@@ -2,11 +2,6 @@
 
 set -e
 
-# # _js_escape 'some "string" value'
-# _js_escape() {
-# 	jq --null-input --arg 'str' "$1" '$str'
-# }
-
 check_initialized_db() {
   echo 'Check initialized database'
   shouldPerformInitdb=1
@@ -56,27 +51,6 @@ init_mongodb() {
     mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
   fi
 }
-
-# start_redis(){
-#   echo 'Update Redis config'
-#   REDIS_BASE_DIR="/etc/redis"
-#   ARGS=("$REDIS_BASE_DIR/redis.conf" "--daemonize" "no") 
-#   echo "Starting redis-server"
-#   # Start installed services - Dependencies Layer
-#   exec redis-server "${ARGS}" &
-# }
-
-# start_mongodb(){
-  
-  
-# 	# Run logic int database schema
-# 	init_database
-# #   else
-# # 	mongod --fork --port 27017 --dbpath /data/mongodb --logpath /data/mongodb/log --replSet mr1 --keyFile /data/mongodb/key --bind_ip localhost
-# #   	echo "Waiting 10s for mongodb init with replica set"
-# #   	sleep 10;
-#   fi
-# }
 
 init_ssl_cert(){
 	local domain="$1"
@@ -156,19 +130,6 @@ configure_ssl(){
   nginx -s stop
 }
 
-# start_backend_application(){
-#   java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
-# }
-
-# start_rts_application(){
-#   cd /app && node server.js
-# }
-
-# start_application(){
-#   start_backend_application
-#   start_rts_application
-# }
-
 echo 'Checking existing configuration file'
 if ! [[ -e "/opt/appsmith/docker.env" ]]; then
 	echo "Generating configuration environment file"
@@ -206,8 +167,7 @@ fi
 
 
 # Main Section
-#start_redis
 init_mongodb
 configure_ssl
-#start_application
+# Run CMD
 exec "$@"
