@@ -57,17 +57,15 @@ COPY ./app/rts/package.json ./app/rts/dist/* rts/
 COPY ./app/rts/node_modules rts/node_modules
 
 # ------------------------------------------------------------------------
-# Nginx config - Configuration layer
+# Nginx & MongoDB config template - Configuration layer
 COPY ./deploy/fat_container/templates/nginx_app.conf.sh ./deploy/fat_container/templates/mongo-init.js.sh ./deploy/fat_container/templates/docker.env.sh configuration/
-# Mongodb config - Configuration layer
-# COPY ./deploy/fat_container/templates/mongo-init.js.sh configuration/mongo-init.js.sh
 
 # Add bootstrapfile
 COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts/* ./deploy/fat_container/utils/db-handler/*-db.js ./
 COPY ./deploy/fat_container/utils/db-handler/node_modules ./node_modules
 # Add process config to be run by supervisord
 COPY ./deploy/fat_container/templates/supervisord.conf /etc/supervisor/supervisord.conf
-COPY ./deploy/fat_container/templates/supervisord/* /etc/supervisor/conf.d/
+COPY ./deploy/fat_container/templates/supervisord/ configuration/supervisord/
 
 # Add defined cron job
 COPY ./deploy/fat_container/templates/cron.d /etc/cron.d/

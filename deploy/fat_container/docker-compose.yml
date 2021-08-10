@@ -4,12 +4,13 @@ services:
   appsmith:
     build:
       context: ../../
-    env_file: 
-      - fat_container.env
+    # env_file: 
+    #   - fat_container.env
     ports:
       - "18081:80"
       - "18080:8080"
       - "17017:27017"
+      - "9001:9001"
   # mongo:
   #   image: mongo:4.4.6
   #   expose:
