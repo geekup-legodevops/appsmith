@@ -6,7 +6,7 @@ LABEL maintainer="tech@appsmith.com"
 WORKDIR /opt/appsmith
 
 # Update APK packages - Base Layer
-RUN apt-get update && apt-get install --no-install-recommends -y supervisor curl cron certbot nginx gnupg xz-utils redis wget gettext openjdk-11-jre && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y supervisor vim curl cron certbot nginx gnupg xz-utils redis wget gettext openjdk-11-jre && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install services - Service Layer
 # Install MongoDB v4.0.5, Redis
 RUN wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add - 

@@ -11,6 +11,9 @@ services:
       - "18080:8080"
       - "17017:27017"
       - "9001:9001"
+    volumes: 
+      - ./stacks:/opt/appsmith/data
+      - ./utils:/opt/appsmith/utils
   # mongo:
   #   image: mongo:4.4.6
   #   expose:

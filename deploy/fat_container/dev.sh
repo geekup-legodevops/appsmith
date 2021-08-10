@@ -1,3 +1,4 @@
 #!/bin/bash
 docker-compose build
-docker run --env-file fat_container.env  -p 18080:80 -it f_sm:latest /bin/bash
+# docker run --env-file fat_container.env  -p 18080:80 -it f_sm:latest /bin/bash
+docker-compose up -d --force-recreate

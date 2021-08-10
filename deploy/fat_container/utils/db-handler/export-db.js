@@ -5,8 +5,10 @@ const MONGO_HOST = process.env.MONGO_HOST
 const MONGO_USERNAME= process.env.MONGO_USERNAME
 const MONGO_PASSWORD= process.env.MONGO_PASSWORD
 const MONGO_DATABASE= process.env.MONGO_DATABASE
+const BACKUP_PATH = '/opt/appsmith/data/backup'
 
-const cmd = `mongodump --host=${MONGO_HOST} --username=${MONGO_USERNAME} --password=${MONGO_PASSWORD} --db=${MONGO_DATABASE} --archive=/opt/appsmith/data/mongodb --gzip`
+shell.mkdir('-p', [`${BACKUP_PATH}`]);
+const cmd = `mongodump --host=${MONGO_HOST} --username=${MONGO_USERNAME} --password=${MONGO_PASSWORD} --db=${MONGO_DATABASE} --archive=${BACKUP_PATH}/data.archive --gzip`
 console.log('executing: ' + cmd)
 shell.exec(cmd, function (code, stdout, stderr) {
 	if (code != 0) {

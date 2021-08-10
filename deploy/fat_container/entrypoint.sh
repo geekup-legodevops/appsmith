@@ -92,7 +92,7 @@ init_ssl_cert(){
 		-out "$live_path/fullchain.pem" \
 		-subj "/CN=localhost"
 
-	#reload Nginx
+	#Reload Nginx
 	echo
 	echo "Reload Nginx"
 	nginx -s reload
