@@ -20,3 +20,11 @@ db.getCollectionNames(function (err, names) {
   })
   process.exit(0)
 })
+
+async function stop_application() {
+  await shell.exec('/usr/bin/supervisorctl stop backend rts')
+}
+
+async function start_application() {
+  await shell.exec('/usr/bin/supervisorctl start backend rts')
+}
