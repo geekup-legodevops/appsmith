@@ -25,6 +25,7 @@ init_mongodb() {
   MONGO_DB_PATH="/opt/appsmith/data/mongodb"
   MONGO_LOG_PATH="$MONGO_DB_PATH/log"
   MONGO_DB_KEY="$MONGO_DB_PATH/key"
+  mkdir -p "$MONGO_DB_PATH"
   touch "$MONGO_LOG_PATH"
   ## check shoud init 
   check_initialized_db
