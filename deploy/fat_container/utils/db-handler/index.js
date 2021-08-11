@@ -6,37 +6,63 @@ const MONGO_HOST = process.env.MONGO_HOST
 const MONGO_USERNAME= process.env.MONGO_USERNAME
 const MONGO_PASSWORD= process.env.MONGO_PASSWORD
 const MONGO_DATABASE= process.env.MONGO_DATABASE
+
 const BACKUP_PATH = '/opt/appsmith/data/backup'
 
-async function export_database() {
+function export_database() {
+  console.log('export_database  ....')
   shell.mkdir('-p', [`${BACKUP_PATH}`]);
   const cmd = `mongodump --host=${MONGO_HOST} --username=${MONGO_USERNAME} --password=${MONGO_PASSWORD} --db=${MONGO_DATABASE} --archive=${BACKUP_PATH}/data.archive --gzip`
   console.log('executing: ' + cmd)
-  shell.exec(cmd, function (code, stdout, stderr) {
-    if (code != 0) {
-    console.error('Error: ' + code)
-    console.log('Program output:', stdout)
-    console.log('Program stderr:', stderr)
-    }
-  })
+  shell.exec(cmd)
+  console.log('export_database done')
+
 }
 
-async function stop_application() {
-  await shell.exec('/usr/bin/supervisorctl stop backend rts')
+function stop_application() {
+  console.log('stop_application  ....')
+  shell.exec('/usr/bin/supervisorctl stop backend rts')
+  console.log('stop_application done')
+
 }
 
-async function start_application() {
-  await shell.exec('/usr/bin/supervisorctl start backend rts')
+function start_application() {
+  console.log('start_application  ....')
+  shell.exec('/usr/bin/supervisorctl start backend rts')
+  console.log('start_application done')
+
 }
 
 
 // Main application workflow
-check_supervisord_status_cmd = '/usr/bin/supervisorctl >/dev/null'
-shell.exec(check_supervisord_status_cmd, function (code) {
-  if (code != 0) {
-    shell.exec('/usr/bin/supervisorcd')
+function main() {
+  try {
+    console.log('check_supervisord_status_cmd')
+    check_supervisord_status_cmd = '/usr/bin/supervisorctl'
+    const {code } = shell.exec(check_supervisord_status_cmd, {async: true, silent: true})
+    if(code > 0  ) {
+      shell.echo('application is not running, starting supervisord')
+      shell.exec('/usr/bin/supervisord', {async: true})
+    }
+    console.log('check_supervisord_status_cmd done')
+
+    shell.echo('stop_application')
+    stop_application()
+    shell.echo('export_database')
+    export_database()
+    shell.echo('start_application')
+    start_application()
+    shell.echo('Export database done')
+    process.exit(0);
+  } catch (err) {
+    console.log(err);
+    shell.echo(err)
+    process.exit(1);
   }
-})
-stop_application
-  .then(export_database)
-  .then(start_application)
+ 
+}
+
+// Run application
+main()
+
+
