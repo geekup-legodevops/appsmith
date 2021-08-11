@@ -5,8 +5,6 @@ services:
       context: ../../
     ports:
       - "18081:80"
-      - "18080:8080"
-      - "17017:27017"
     volumes: 
       - ./stacks:/opt/appsmith/data
       - ./utils:/opt/appsmith/utils
