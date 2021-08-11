@@ -34,21 +34,20 @@ function start_application() {
 // Main application workflow
 function main() {
   try {
-    console.log('check_supervisord_status_cmd')
     check_supervisord_status_cmd = '/usr/bin/supervisorctl >/dev/null 2>&1 '
-    const {code} = shell.exec(check_supervisord_status_cmd, function(code) {
+    shell.exec(check_supervisord_status_cmd, function(code) {
       if(code > 0  ) {
         shell.echo('application is not running, starting supervisord')
         shell.exec('/usr/bin/supervisord')
       }
-      console.log('check_supervisord_status_cmd done')
     })
 
-    shell.echo('stop_application')
+    shell.echo('stop backend & rts application')
     stop_application()
-    shell.echo('export_database')
+    shell.echo('exporting database ....')
     export_database()
-    shell.echo('start_application')
+    shell.echo('import database done!')
+    shell.echo('start backend & rts application')
     start_application()
     shell.echo('Export database done')
     process.exit(0);
