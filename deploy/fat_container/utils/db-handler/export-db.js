@@ -6,9 +6,7 @@ const APPSMITH_MONGO_HOST = process.env.APPSMITH_MONGO_HOST
 const APPSMITH_MONGO_USERNAME= process.env.APPSMITH_MONGO_USERNAME
 const APPSMITH_MONGO_PASSWORD= process.env.APPSMITH_MONGO_PASSWORD
 const APPSMITH_MONGO_DATABASE= process.env.APPSMITH_MONGO_DATABASE
-
 const BACKUP_PATH = '/opt/appsmith/data/backup'
-const RESTORE_PATH = '/opt/appsmith/data/restore'
 
 function export_database() {
   console.log('export_database  ....')
