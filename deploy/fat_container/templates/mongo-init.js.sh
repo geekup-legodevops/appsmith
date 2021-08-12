@@ -2,21 +2,21 @@
 
 set -o nounset
 
-mongo_root_user="$1"
-mongo_root_password="$2"
+MONGO_ROOT_USER="$1"
+MONGO_ROOT_PASSWORD="$2"
 
 cat << EOF
 let error = false
 print("**** Going to start Mongo seed ****")
 
 var admin = db.getSiblingDB("admin")
-admin.auth("$mongo_root_user", "$mongo_root_password")
+admin.auth("$MONGO_ROOT_USER", "$MONGO_ROOT_PASSWORD")
 
 let res = [
     db.createUser(
         {
-            user: "$mongo_root_user",
-            pwd: "$mongo_root_password",
+            user: "$MONGO_ROOT_USER",
+            pwd: "$MONGO_ROOT_PASSWORD",
             roles: [{
                 role: "root",
                 db: "admin"

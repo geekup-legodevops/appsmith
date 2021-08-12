@@ -5,7 +5,6 @@ set -e
 check_initialized_db() {
   echo 'Check initialized database'
   shouldPerformInitdb=1
-  #check for a few known paths (to determine whether we've already initialized and should thus skip our initdb scripts)
   for path in \
 	"$MONGO_DB_PATH/WiredTiger" \
 	"$MONGO_DB_PATH/journal" \
@@ -27,19 +26,18 @@ init_mongodb() {
   MONGO_DB_KEY="$MONGO_DB_PATH/key"
   mkdir -p "$MONGO_DB_PATH"
   touch "$MONGO_LOG_PATH"
-  ## check shoud init 
+
   check_initialized_db
-  ## Init appmsimth schema
+
   if [[ $shouldPerformInitdb -gt 0 ]]; then
 	# Start installed MongoDB service - Dependencies Layer
 	mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH"
 	echo "Waiting 10s for mongodb init"
 	sleep 10;
-    bash "/opt/appsmith/configuration/mongo-init.js.sh" "$MONGO_USERNAME" "$MONGO_PASSWORD" > "/opt/appsmith/configuration/mongo-init.js"
-    mongo "127.0.0.1/${MONGO_DATABASE}" /opt/appsmith/configuration/mongo-init.js
+    bash "/opt/appsmith/configuration/mongo-init.js.sh" "$APPSMITH_MONGO_USERNAME" "$APPSMITH_MONGO_PASSWORD" > "/opt/appsmith/configuration/mongo-init.js"
+    mongo "127.0.0.1/${APPSMITH_MONGO_DATABASE}" /opt/appsmith/configuration/mongo-init.js
     echo "Seeding db done"
 
-    # Mongodb start
     echo "Enable replica set"
     mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
     echo "Fork process"
@@ -70,7 +68,7 @@ init_ssl_cert(){
     fi
 
 	echo "Re-generating nginx config template with domain"
-    bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+    bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
     echo "Generating nginx configuration"
     cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
@@ -92,14 +90,11 @@ init_ssl_cert(){
 		-out "$live_path/fullchain.pem" \
 		-subj "/CN=localhost"
 
-	#Reload Nginx
-	echo
 	echo "Reload Nginx"
 	nginx -s reload
 
 	echo "Removing key now that validation is done for $domain..."
 	rm -Rfv /etc/letsencrypt/live/$domain /etc/letsencrypt/archive/$domain /etc/letsencrypt/renewal/$domain.conf
-    echo
 
 	echo "Generating certification for domain $domain"
 	certbot certonly --webroot --webroot-path="$data_path/certbot" \
@@ -114,31 +109,29 @@ init_ssl_cert(){
 }
 
 configure_ssl(){
-  #check domain & confing ssh
   NGINX_SSL_CMNT="#"
 
   echo "Generating nginx config template without domain"
-  bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+  bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
   echo "Generating nginx configuration"
   cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
   nginx
   
-  if [[ -n $CUSTOM_DOMAIN ]]; then
-    #then run script
-	init_ssl_cert "$CUSTOM_DOMAIN"
+  if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
+	init_ssl_cert "$APPSMITH_CUSTOM_DOMAIN"
   fi
   nginx -s stop
 }
 
 configure_supervisord(){
 	SUPERVISORD_CONF_PATH="/opt/appsmith/configuration/supervisord"
-	if [ -e "/etc/supervisor/conf.d/"*.conf ]; then
+	if [[ -f "/etc/supervisor/conf.d/"*.conf ]]; then
 		rm "/etc/supervisor/conf.d/"*
 	fi
 
 	cp -f "$SUPERVISORD_CONF_PATH/application_process/"*.conf /etc/supervisor/conf.d
-	if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:appsmith@localhost/appsmith" ]]; then
+	if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:$APPSMITH_MONGO_PASSWORD@localhost/appsmith" ]]; then
 		cp "$SUPERVISORD_CONF_PATH/mongodb.conf" /etc/supervisor/conf.d/
 	fi
 	if [[ "$APPSMITH_REDIS_URL" = "redis://127.0.0.1:6379" ]]; then
@@ -146,23 +139,13 @@ configure_supervisord(){
 	fi
 }
 
-# start_backend_application(){
-#   java -Dserver.port=8080 -Djava.security.egd='file:/dev/./urandom' -jar server.jar 2>&1 &
-# }
-
-# start_rts_application(){
-#   cd /app && node server.js
-# }
-
-# start_application(){
-#   start_backend_application
-#   start_rts_application
-# }
-
 echo 'Checking existing configuration file'
 if ! [[ -e "/opt/appsmith/docker.env" ]]; then
+	AUTO_GEN_MONGO_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	AUTO_GEN_ENCRYPTION_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	AUTO_GEN_ENCRYPTION_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	echo "Generating configuration environment file"
-	bash "/opt/appsmith/configuration/docker.env.sh" > "/opt/appsmith/docker.env"
+	bash "/opt/appsmith/configuration/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "/opt/appsmith/docker.env"
 fi
 
 echo 'Load environment configuration'
@@ -200,9 +183,8 @@ fi
 # Main Section
 init_mongodb
 configure_ssl
-#start_application
 configure_supervisord
-# Run CMD
+
 # Handle CMD command
 case $1 in
    "export-db")

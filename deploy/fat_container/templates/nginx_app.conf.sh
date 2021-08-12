@@ -8,12 +8,12 @@ set -o nounset
 # and $host) are for nginx to work out.
 
 NGINX_SSL_CMNT="$1"
-custom_domain="$2"
+CUSTOM_DOMAIN="$2"
 
 cat <<EOF
 server {
     listen 80;
-$NGINX_SSL_CMNT    server_name $custom_domain ;
+$NGINX_SSL_CMNT    server_name $CUSTOM_DOMAIN ;
     client_max_body_size 100m;
 
     gzip on;
@@ -82,11 +82,11 @@ $NGINX_SSL_CMNT    server_name $custom_domain ;
 
 $NGINX_SSL_CMNT server {
 $NGINX_SSL_CMNT    listen 443 ssl;
-$NGINX_SSL_CMNT    server_name $custom_domain;
+$NGINX_SSL_CMNT    server_name $CUSTOM_DOMAIN;
 $NGINX_SSL_CMNT    client_max_body_size 100m;
 $NGINX_SSL_CMNT
-$NGINX_SSL_CMNT    ssl_certificate /etc/letsencrypt/live/$custom_domain/fullchain.pem;
-$NGINX_SSL_CMNT    ssl_certificate_key /etc/letsencrypt/live/$custom_domain/privkey.pem;
+$NGINX_SSL_CMNT    ssl_certificate /etc/letsencrypt/live/$CUSTOM_DOMAIN/fullchain.pem;
+$NGINX_SSL_CMNT    ssl_certificate_key /etc/letsencrypt/live/$CUSTOM_DOMAIN/privkey.pem;
 $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    include /opt/appsmith/data/certificate/conf/options-ssl-nginx.conf;
 $NGINX_SSL_CMNT    ssl_dhparam /opt/appsmith/data/certificate/conf/ssl-dhparams.pem;

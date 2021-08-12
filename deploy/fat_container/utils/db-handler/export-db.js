@@ -2,10 +2,10 @@
 var shell = require('shelljs')
 
 // Load env configuration
-const MONGO_HOST = process.env.MONGO_HOST
-const MONGO_USERNAME= process.env.MONGO_USERNAME
-const MONGO_PASSWORD= process.env.MONGO_PASSWORD
-const MONGO_DATABASE= process.env.MONGO_DATABASE
+const APPSMITH_MONGO_HOST = process.env.APPSMITH_MONGO_HOST
+const APPSMITH_MONGO_USERNAME= process.env.APPSMITH_MONGO_USERNAME
+const APPSMITH_MONGO_PASSWORD= process.env.APPSMITH_MONGO_PASSWORD
+const APPSMITH_MONGO_DATABASE= process.env.APPSMITH_MONGO_DATABASE
 
 const BACKUP_PATH = '/opt/appsmith/data/backup'
 const RESTORE_PATH = '/opt/appsmith/data/restore'
@@ -13,7 +13,7 @@ const RESTORE_PATH = '/opt/appsmith/data/restore'
 function export_database() {
   console.log('export_database  ....')
   shell.mkdir('-p', [`${BACKUP_PATH}`]);
-  const cmd = `mongodump --host=${MONGO_HOST} --username=${MONGO_USERNAME} --password=${MONGO_PASSWORD} --db=${MONGO_DATABASE} --archive=${BACKUP_PATH}/data.archive --gzip`
+  const cmd = `mongodump --host=${APPSMITH_MONGO_HOST} --username=${APPSMITH_MONGO_USERNAME} --password=${APPSMITH_MONGO_PASSWORD} --db=${APPSMITH_MONGO_DATABASE} --archive=${BACKUP_PATH}/data.archive --gzip`
   console.log('executing: ' + cmd)
   shell.exec(cmd)
   console.log('export_database done')
