@@ -13,7 +13,7 @@ const RESTORE_PATH = '/opt/appsmith/data/restore'
 function export_database() {
   console.log('export_database  ....')
   shell.mkdir('-p', [`${BACKUP_PATH}`]);
-  const cmd = `mongodump --host=${APPSMITH_MONGO_HOST} --username=${APPSMITH_MONGO_USERNAME} --password=${APPSMITH_MONGO_PASSWORD} --db=${APPSMITH_MONGO_DATABASE} --archive=${BACKUP_PATH}/data.archive --gzip`
+  const cmd = `mongodump --uri='mongodb://${APPSMITH_MONGO_USERNAME}:${APPSMITH_MONGO_PASSWORD}@${APPSMITH_MONGO_HOST}/${APPSMITH_MONGO_DATABASE}' --archive=${BACKUP_PATH}/data.archive --gzip`
   console.log('executing: ' + cmd)
   shell.exec(cmd)
   console.log('export_database done')
