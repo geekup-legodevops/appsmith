@@ -1,15 +1,13 @@
 // Init function export mongodb
 var shell = require('shelljs')
 
-const APPSMITH_MONGO_HOST = process.env.APPSMITH_MONGO_HOST
-const APPSMITH_MONGO_USERNAME= process.env.APPSMITH_MONGO_USERNAME
-const APPSMITH_MONGO_PASSWORD= process.env.APPSMITH_MONGO_PASSWORD
-const APPSMITH_MONGO_DATABASE= process.env.APPSMITH_MONGO_DATABASE
+// Load env configuration
+const APPSMITH_MONGO_URI = process.env.APPSMITH_MONGO_URI
 const RESTORE_PATH = '/opt/appsmith/data/restore'
 
 function import_database() {
 	console.log('import_database  ....')
-	const cmd = `mongorestore --uri='mongodb://${APPSMITH_MONGO_USERNAME}:${APPSMITH_MONGO_PASSWORD}@${APPSMITH_MONGO_HOST}/${APPSMITH_MONGO_DATABASE}' --gzip --archive=${RESTORE_PATH}/data.archive`
+	const cmd = `mongorestore --uri='mongodb://${APPSMITH_MONGO_URI}' --gzip --archive=${RESTORE_PATH}/data.archive`
 	console.log('executing: ' + cmd)
 	shell.exec(cmd)
 	console.log('import_database done')

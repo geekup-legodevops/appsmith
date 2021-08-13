@@ -140,17 +140,17 @@ configure_supervisord(){
 }
 
 echo 'Checking existing configuration file'
-if ! [[ -e "/opt/appsmith/docker.env" ]]; then
+if ! [[ -e "/opt/appsmith/data/docker.env" ]]; then
 	AUTO_GEN_MONGO_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	AUTO_GEN_ENCRYPTION_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	AUTO_GEN_ENCRYPTION_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	echo "Generating configuration environment file"
-	bash "/opt/appsmith/configuration/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "/opt/appsmith/docker.env"
+	bash "/opt/appsmith/configuration/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "/opt/appsmith/data/docker.env"
 fi
 
 echo 'Load environment configuration'
 set -o allexport
-. /opt/appsmith/docker.env
+. /opt/appsmith/data/docker.env
 set +o allexport
 
 # Check for enviroment vairalbes

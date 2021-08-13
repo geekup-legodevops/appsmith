@@ -2,16 +2,13 @@
 var shell = require('shelljs')
 
 // Load env configuration
-const APPSMITH_MONGO_HOST = process.env.APPSMITH_MONGO_HOST
-const APPSMITH_MONGO_USERNAME= process.env.APPSMITH_MONGO_USERNAME
-const APPSMITH_MONGO_PASSWORD= process.env.APPSMITH_MONGO_PASSWORD
-const APPSMITH_MONGO_DATABASE= process.env.APPSMITH_MONGO_DATABASE
+const APPSMITH_MONGO_URI = process.env.APPSMITH_MONGO_URI
 const BACKUP_PATH = '/opt/appsmith/data/backup'
 
 function export_database() {
   console.log('export_database  ....')
   shell.mkdir('-p', [`${BACKUP_PATH}`]);
-  const cmd = `mongodump --uri='mongodb://${APPSMITH_MONGO_USERNAME}:${APPSMITH_MONGO_PASSWORD}@${APPSMITH_MONGO_HOST}/${APPSMITH_MONGO_DATABASE}' --archive=${BACKUP_PATH}/data.archive --gzip`
+  const cmd = `mongodump --uri='${APPSMITH_MONGO_URI}' --archive=${BACKUP_PATH}/data.archive --gzip`
   console.log('executing: ' + cmd)
   shell.exec(cmd)
   console.log('export_database done')
