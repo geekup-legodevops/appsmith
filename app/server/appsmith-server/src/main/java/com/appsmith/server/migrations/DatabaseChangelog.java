@@ -2946,4 +2946,14 @@ public class DatabaseChangelog {
             }
         });
     }
+
+    @ChangeSet(order = "081", id = "fix-snowflake-documentation", author = "")
+    public void fixSnowflakeDocumentationLink(MongockTemplate mongoTemplate) {
+        final Plugin plugin = mongoTemplate.findOne(
+                query(where("packageName").is("snowflake-plugin")),
+                Plugin.class
+        );
+        plugin.setDocumentationLink("https://docs.appsmith.com/datasource-reference/querying-snowflake");
+        mongoTemplate.save(plugin);
+    }
 }
