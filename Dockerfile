@@ -22,8 +22,9 @@ RUN echo "deb [ arch=amd64,arm64 ]http://repo.mongodb.org/apt/debian buster/mong
 # Install node v14 - Service Layer
 RUN wget -O /tmp/node-v14.15.4-linux-x64.tar.xz https://nodejs.org/dist/v14.15.4/node-v14.15.4-linux-x64.tar.xz \
 	&& tar -xf /tmp/node-v14.15.4-linux-x64.tar.xz -C /tmp/ \
-    && cp -P /tmp/node-v14.15.4-linux-x64/bin/node /usr/local/bin/ \
+  && cp -P /tmp/node-v14.15.4-linux-x64/bin/node /usr/local/bin/ \
 	&& update-alternatives --install /usr/bin/node node /usr/local/bin/node 1 \
+  && curl -L https://www.npmjs.com/install.sh | sh \
 	&& apt-get remove wget xz-utils -y \
 	&& rm -rf /tmp/node-*
 
@@ -66,8 +67,12 @@ COPY ./app/rts/node_modules rts/node_modules
 COPY ./deploy/fat_container/templates/nginx_app.conf.sh ./deploy/fat_container/templates/mongo-init.js.sh ./deploy/fat_container/templates/docker.env.sh configuration/
 
 # Add bootstrapfile
-COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts/* ./deploy/fat_container/utils/db-handler/*-db.js ./
-COPY ./deploy/fat_container/utils/db-handler/node_modules ./node_modules
+COPY ./deploy/fat_container/entrypoint.sh ./deploy/fat_container/scripts/* ./
+
+# Add uitl tools
+RUN mkdir -p ./utils
+COPY ./deploy/fat_container/utils ./utils
+RUN cd ./utils && npm install && npm install -g .
 
 # Add process config to be run by supervisord
 COPY ./deploy/fat_container/templates/supervisord.conf /etc/supervisor/supervisord.conf
@@ -77,7 +82,10 @@ COPY ./deploy/fat_container/templates/supervisord/ configuration/supervisord/
 COPY ./deploy/fat_container/templates/cron.d /etc/cron.d/
 RUN chmod 0644 /etc/cron.d/*
 
-RUN chmod +x entrypoint.sh renew-certificate.sh export-db.sh import-db.sh
+RUN chmod +x entrypoint.sh renew-certificate.sh
+
+# Update path to load appsmith utils tool as default
+ENV PATH /app/appmith/utils/node_modules/.bin:$PATH
 
 EXPOSE 80
 EXPOSE 443

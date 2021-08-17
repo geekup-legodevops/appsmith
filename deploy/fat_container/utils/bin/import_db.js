@@ -2,19 +2,16 @@
 var shell = require('shelljs')
 
 // Load env configuration
-const APPSMITH_MONGO_URI = process.env.APPSMITH_MONGO_URI
 const RESTORE_PATH = '/opt/appsmith/data/restore'
 
 function import_database() {
 	console.log('import_database  ....')
-	const cmd = `mongorestore --uri='mongodb://${APPSMITH_MONGO_URI}' --gzip --archive=${RESTORE_PATH}/data.archive`
-	console.log('executing: ' + cmd)
+	const cmd = `mongorestore --uri='${process.env.APPSMITH_MONGODB_URI}' --gzip --archive=${RESTORE_PATH}/data.archive`
 	shell.exec(cmd)
 	console.log('import_database done')
 }
   
 function stop_application() {
-	console.log('stop_application  ....')
 	shell.exec('/usr/bin/supervisorctl stop backend rts')
 	console.log('stop_application done')
 }
@@ -22,7 +19,6 @@ function stop_application() {
 function start_application() {
 	console.log('start_application  ....')
 	shell.exec('/usr/bin/supervisorctl start backend rts')
-	console.log('start_application done')
 }
 
 // Main application workflow
@@ -50,7 +46,6 @@ function main() {
 		shell.echo(err)
 		process.exit(1);
 	}
-
 }
-// Run application
-main()
+
+module.exports = {runImportDatabase: main};

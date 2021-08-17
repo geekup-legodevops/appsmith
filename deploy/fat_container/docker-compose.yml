@@ -3,6 +3,7 @@ services:
   appsmith:
     build:
       context: ../../
+    container_name: appsmmith_fat
     ports:
       - "18081:80"
       - "9001:9001"

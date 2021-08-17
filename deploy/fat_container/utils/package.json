@@ -2,13 +2,20 @@
   "name": "db-handler",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "shelljs": "^0.8.4"
+    "boxen": "^5.0.1",
+    "chalk": "^4.1.2",
+    "dotenv": "^10.0.0",
+    "shelljs": "^0.8.4",
+    "yargs": "^17.1.1"
+  },
+  "bin": {
+    "appsmith": "./bin/index.js"
   }
 }

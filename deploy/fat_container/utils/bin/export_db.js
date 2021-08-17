@@ -2,14 +2,12 @@
 var shell = require('shelljs')
 
 // Load env configuration
-const APPSMITH_MONGO_URI = process.env.APPSMITH_MONGO_URI
 const BACKUP_PATH = '/opt/appsmith/data/backup'
 
 function export_database() {
   console.log('export_database  ....')
   shell.mkdir('-p', [`${BACKUP_PATH}`]);
-  const cmd = `mongodump --uri='${APPSMITH_MONGO_URI}' --archive=${BACKUP_PATH}/data.archive --gzip`
-  console.log('executing: ' + cmd)
+  const cmd = `mongodump --uri='${process.env.APPSMITH_MONGODB_URI}' --archive=${BACKUP_PATH}/data.archive --gzip`
   shell.exec(cmd)
   console.log('export_database done')
 }
@@ -54,5 +52,4 @@ function main() {
  
 }
 
-// Run application
-main()
+module.exports = {runExportDatabase: main};
