@@ -34,7 +34,7 @@ init_mongodb() {
 	mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH"
 	echo "Waiting 10s for mongodb init"
 	sleep 10;
-    bash "/opt/appsmith/configuration/mongo-init.js.sh" "$APPSMITH_MONGO_USERNAME" "$APPSMITH_MONGO_PASSWORD" > "/opt/appsmith/configuration/mongo-init.js"
+    bash "/opt/appsmith/templates/mongo-init.js.sh" "$APPSMITH_MONGO_USERNAME" "$APPSMITH_MONGO_PASSWORD" > "/opt/appsmith/configuration/mongo-init.js"
     mongo "127.0.0.1/${APPSMITH_MONGO_DATABASE}" /opt/appsmith/configuration/mongo-init.js
     echo "Seeding db done"
 
@@ -68,7 +68,7 @@ init_ssl_cert(){
     fi
 
 	echo "Re-generating nginx config template with domain"
-    bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+    bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
     echo "Generating nginx configuration"
     cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
@@ -97,6 +97,7 @@ init_ssl_cert(){
 	rm -Rfv /etc/letsencrypt/live/$domain /etc/letsencrypt/archive/$domain /etc/letsencrypt/renewal/$domain.conf
 
 	echo "Generating certification for domain $domain"
+  mkdir "$data_path/certbot"
 	certbot certonly --webroot --webroot-path="$data_path/certbot" \
             --register-unsafely-without-email \
             --domains $domain \
@@ -112,7 +113,7 @@ configure_ssl(){
   NGINX_SSL_CMNT="#"
 
   echo "Generating nginx config template without domain"
-  bash "/opt/appsmith/configuration/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+  bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
   echo "Generating nginx configuration"
   cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
@@ -125,7 +126,7 @@ configure_ssl(){
 }
 
 configure_supervisord(){
-	SUPERVISORD_CONF_PATH="/opt/appsmith/configuration/supervisord"
+	SUPERVISORD_CONF_PATH="/opt/appsmith/templates/supervisord"
 	if [[ -f "/etc/supervisor/conf.d/"*.conf ]]; then
 		rm "/etc/supervisor/conf.d/"*
 	fi
@@ -145,7 +146,7 @@ if ! [[ -e "/opt/appsmith/configuration/docker.env" ]]; then
 	AUTO_GEN_MONGO_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	AUTO_GEN_ENCRYPTION_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	AUTO_GEN_ENCRYPTION_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-	bash "/opt/appsmith/configuration/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "/opt/appsmith/configuration/docker.env"
+	bash "/opt/appsmith/templates/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "/opt/appsmith/configuration/docker.env"
 fi
 
 echo 'Load environment configuration'
@@ -186,16 +187,4 @@ configure_ssl
 configure_supervisord
 
 # Handle CMD command
-case $1 in
-   "export-db")
-      echo "Trigger export internal db"
-      bash -c "/opt/appsmith/export-db.sh"
-      ;;
-   "import-db")
-      echo "Trigger import intenal db"
-      bash -c "/opt/appsmith/import-db.sh"
-      ;;
-   *)
-     exec "$@"
-     ;;
-esac
+exec "$@"

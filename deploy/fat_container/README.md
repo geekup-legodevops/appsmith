@@ -20,21 +20,32 @@ The fastest way to get started with appsmith is using our cloud-hosted version. 
 ## 2. Step to setup
 - 1. Create `docker-compose.yaml` and copy the following content into it
 ```
-version: "3"
-
+vversion: "3"
 services:
   appsmith:
-    image: registry-gitlab.geekup.io/gu_lego_3/appsmith_v2 #development
+    image: appsmith_fat
+    container_name: appsmith_fat
     ports:
       - "80:80"
       - "443:443"
       - "9001:9001"
     volumes: 
-      - ./stacks:/opt/appsmith/data
-```
-- Or you can retrieve the `docker-compose.yaml` file 
-```
-wget -q https://gitlab.geekup.io/gu_lego_3/appsmith_v2/-/raw/feature/fat-container/deploy/fat_container/docker-compose.yml
+      - ./stacks/data:/opt/appsmith/data
+      - ./stacks/configuration:/opt/appsmith/configuration
+      - ./stacks/letsencrypt:/etc/letsencrypt
+    networks:
+      - appsmith
+  auto_update:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Update check interval in seconds.
+    command: --interval 300 --label-enable --cleanup
+    networks:
+      - appsmith
+networks:
+  appsmith:
+    driver: bridge
 ```
 2. Start application
 ```
@@ -65,7 +76,7 @@ Our container also supports exporting data from the internal database for backup
 
 Export the internal database (You can use command `docker ps` to check the name or the ID of container)
 ```
-docker exec <container name or id> /opt/appsmith/export-db.sh
+docker exec appsmith_fat appsmith export_db
 ```
 The output file will be stored in mounted directory `<mount-point-path>/backup/data.archive` 
 
@@ -80,19 +91,19 @@ First of all, you need to copy or move the gzip file to the container's mounted 
 
 Or you can copy directly to the running container using `docker cp` command
 ```
-docker cp <path-to-file/data.archive> <container id>:/opt/appsmith/data/restore
+docker cp <path-to-file/data.archive> appsmith_fat:/opt/appsmith/data/restore
 ```
 
 Then, simply run following command to import data to internal database
 ```
-docker exec <container name or id> /opt/appsmith/import-db.sh
+docker exec appsmith_fat import_db
 ```
 ### 4.3 Supervisord UI
 To manage the application's processes using supervisord, you can use the supervisord UI
 
 You can use the browser to access port `9001` of the host (`http://localhost:9001` if you run the container on your local machine)
 <p>
-  <img src="../../static/images/appsmith_supervisord_ui.png" width="80%">
+  <img src="./images/appsmith_supervisord_ui.png" width="80%">
 </p>
 
 In this UI, you can manage your application's process. You should stop application's service (MongoDB, Redis) in case of using external service

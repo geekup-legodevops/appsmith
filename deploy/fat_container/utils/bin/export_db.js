@@ -35,14 +35,11 @@ function main() {
       }
     })
 
-    shell.echo('stop backend & rts application')
+    shell.echo('stop backend & rts application before export database')
     stop_application()
-    shell.echo('exporting database ....')
     export_database()
-    shell.echo('import database done!')
-    shell.echo('start backend & rts application')
+    shell.echo('start backend & rts application after export database')
     start_application()
-    shell.echo('Export database done')
     process.exit(0);
   } catch (err) {
     console.log(err);

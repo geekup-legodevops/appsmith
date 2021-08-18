@@ -13,11 +13,9 @@ function import_database() {
   
 function stop_application() {
 	shell.exec('/usr/bin/supervisorctl stop backend rts')
-	console.log('stop_application done')
 }
 
 function start_application() {
-	console.log('start_application  ....')
 	shell.exec('/usr/bin/supervisorctl start backend rts')
 }
 
@@ -33,12 +31,10 @@ function main() {
     })
 
 
-		shell.echo('stop backend & rts application')
+		shell.echo('stop backend & rts application before import database')
 		stop_application()
-		shell.echo('importing database ....')
 		import_database()
-		shell.echo('import database done!')
-		shell.echo('start backend & rts application')
+		shell.echo('start backend & rts application after import database')
 		start_application()
 		process.exit(0);
 	} catch (err) {

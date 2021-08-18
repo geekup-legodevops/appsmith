@@ -8,3 +8,4 @@
 coverage-summary.json
 data/*
 deploy/fat_container/stacks/*
+deploy/fat_container/test/*
