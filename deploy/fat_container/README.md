@@ -20,7 +20,7 @@ The fastest way to get started with appsmith is using our cloud-hosted version. 
 ## 2. Step to setup
 - 1. Create `docker-compose.yaml` and copy the following content into it
 ```
-vversion: "3"
+version: "3"
 services:
   appsmith:
     image: appsmith_fat
