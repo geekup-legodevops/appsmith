@@ -1,35 +1,70 @@
-# Default values for helm.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 replicaCount: 1
+## @section Global parameters
+## Global Docker image parameters
+## Please, note that this will override the image parameters, including dependencies, configured to use the global value
+## Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
+##
+
+## @param global.imageRegistry Global Docker image registry
+## @param global.imagePullSecrets Global Docker registry secret names as an array
+## @param global.storageClass Global StorageClass for Persistent Volume(s)
+## @param global.namespaceOverride Override the namespace for resource deployed by the chart, but can itself be overridden by the local namespaceOverride
+##
+global:
+  imageRegistry: ""
+  imagePullSecrets:
+    - name: gitlab
+  storageClass: "local-storage"
+  namespaceOverride: "appsmith"
 
 image:
   repository: registry-gitlab.geekup.io/gu_lego_3/appsmith_v2
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "ssl5"
-
-imagePullSecrets:
-  - name: gitlab
-
-# imageCredentials:
-#   name: gitlab-registry
-#   registry: registry-gitlab.geekup.io
-#   username: phat.ct
-#   password: Tanphat123
-
-nameOverride: ""
+  tag: "latest"
+## 
+imageCredentials:
+  registry: registry-gitlab.geekup.io
+  username: phat.ct
+  password: yf1aiEoo-YxywQpF9exA
+## @param nameOverride String to partially override mongodb.fullname template (will maintain the release name)
+##
+nameOverride: "appsmith"
+## @param fullnameOverride String to fully override mongodb.fullname template
+##
 fullnameOverride: "appsmith"
+## @param containerName specify running container name in a pod
+##
+containerName: "appsmith"
+## @param commonAnnotations Common annotations to add to all Appsmith resources (sub-charts are not considered). Evaluated as a template
+##
+commonAnnotations: {}
 
+## @param useStatefulSet Set to true to use a StatefulSet instead of a Deployment
+##
+useStatefulSet: false
+
+schedulerName: ""
+
+## @param strategyType StrategyType for MongoDB&reg; statefulset
+## It can be set to RollingUpdate or Recreate by default.
+##
+strategyType: RollingUpdate 
+
+## ServiceAccount
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
 serviceAccount:
-  # Specifies whether a service account should be created
+  ## @param serviceAccount.create Enable creation of ServiceAccount for Appsmith; pods
+  ##
   create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  ## @param serviceAccount.name Name of the created serviceAccount
+  ## If not set and create is true, a name is generated using the appsmith.fullname template
+  ##
   name: ""
+  ## @param serviceAccount.annotations Additional Service Account annotations
+  ##
+  annotations: {}
 
 podAnnotations: {}
 
@@ -45,8 +80,36 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
+  ## @param service.name 
+  ## @param service.type Kubernetes Service type
+  ##
   type: ClusterIP
+  ## @param service.port; service port
+  ##
   port: 80
+  ## @param service.portName Appsmith; service port name
+  ##
+  portName: appsmith
+  ## @param service.clusterIP Appsmith; service cluster IP
+  ## e.g:
+  ## clusterIP: None
+  ##  
+  clusterIP: 
+  ## @param service.externalIPs Specify the externalIP value ClusterIP service type.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips
+  ##
+  externalIPs: []
+  ## @param service.loadBalancerIP loadBalancerIP for MongoDB&reg; Service
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
+  ##
+  loadBalancerIP: ""
+  ## @param service.loadBalancerSourceRanges Address(es) that are allowed when service is LoadBalancer
+  ## ref: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ##
+  loadBalancerSourceRanges: []
+  ## @param service.annotations Provide any additional annotations that may be required
+  ##
+  annotations: {}
 
 ingress:
   enabled: false
@@ -88,3 +151,43 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+persistence:
+  ## @param persistence.enabled - Enable data persistence using PVC
+  ##
+  enabled: true
+  ## @param persistence.storageClass PVC Storage Class 
+  ##
+  storageClass: "local-storage"
+  ## @param persistence.localStorage - Use local storage for PVC
+  ##
+  localStorage: true
+  ## @param persistence.accessModes PV Access Mode
+  ##
+  accessModes:
+    - ReadWriteOnce
+  ## @param persistence.size PVC Storage Request 
+  ##
+  size: 10Gi
+  ## @param persistence.annotations PVC annotations
+  ##
+  annotations: {}
+  ## @param persistence.mountPath Path to mount the volume at
+  ##
+  mountPath: "/opt/appsmith/stacks"
+  ## Fine tuning for volumeClaimTemplates
+  ##
+  volumeClaimTemplates:
+    ## @param persistence.volumeClaimTemplates.selector A label query over volumes to consider for binding (e.g. when using local volumes)
+    ## A label query over volumes to consider for binding (e.g. when using local volumes)
+    ## See https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#labelselector-v1-meta for more details
+    ##
+    selector: {}
+    ## @param persistence.volumeClaimTemplates.requests Custom PVC requests attributes
+    ## Sometime cloud providers use additional requests attributes to provision custom storage instance
+    ## See https://cloud.ibm.com/docs/containers?topic=containers-file_storage#file_dynamic_statefulset
+    ##
+    requests: {}
+    ## @param persistence.volumeClaimTemplates.dataSource Add dataSource to the VolumeClaimTemplate
+    ##
+    dataSource: {}
