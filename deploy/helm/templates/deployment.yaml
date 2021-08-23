@@ -36,7 +36,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.schedulerName }}
-      schedulerName: "{{ .Values.schedulerName }}"
+      schedulerName: {{ .Values.schedulerName | quote }}
       {{- end }}
       serviceAccountName: {{ template "appsmith.serviceAccountName" . }}
       securityContext:

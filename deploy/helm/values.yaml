@@ -159,9 +159,16 @@ persistence:
   ## @param persistence.storageClass PVC Storage Class 
   ##
   storageClass: "local-storage"
+  ## @param persistence.storagePath 
+  ##
+  storagePath: /var/hostpath_pv/stacks
   ## @param persistence.localStorage - Use local storage for PVC
   ##
   localStorage: true
+  ## @param persistence.localCluster
+  ##
+  localCluster: 
+    - minikube
   ## @param persistence.accessModes PV Access Mode
   ##
   accessModes:

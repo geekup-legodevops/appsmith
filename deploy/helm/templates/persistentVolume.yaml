@@ -15,13 +15,13 @@ spec:
   persistentVolumeReclaimPolicy: Delete
   storageClassName: {{ .Values.persistence.storageClass | quote }}
   local:
-    path: /var/stacks # Path to the directory this PV refers to.
+    path: {{ .Values.persistence.storagePath }} # Path to the directory this PV refers to.
   nodeAffinity: # nodeAffinity is required when using local volumes.
     required:
       nodeSelectorTerms:
       - matchExpressions:
         - key: kubernetes.io/hostname
           operator: In
-          values:
-          - minikube
+          values: 
+		    {{- toYaml .Values.persistence.localCluster | nindent 12 }}
 {{- end }}
