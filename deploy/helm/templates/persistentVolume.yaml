@@ -1,4 +1,4 @@
-{{- if .Values.persistence.localStorage }}
+{{- if and .Values.persistence.enabled .Values.persistence.localStorage }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:

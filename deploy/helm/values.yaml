@@ -14,7 +14,7 @@ global:
   imageRegistry: ""
   imagePullSecrets:
     - name: gitlab
-  storageClass: "local-storage"
+  storageClass: ""
   namespaceOverride: "appsmith"
 
 image:
@@ -190,13 +190,13 @@ persistence:
   enabled: true
   ## @param persistence.storageClass PVC Storage Class 
   ##
-  storageClass: "local-storage"
+  storageClass: ""
   ## @param persistence.storagePath 
   ##
   storagePath: /tmp/hostpath_pv/stacks
   ## @param persistence.localStorage - Use local storage for PVC
   ##
-  localStorage: true
+  localStorage: false
   ## @param persistence.localCluster
   ##
   localCluster: 
