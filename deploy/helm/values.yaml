@@ -190,7 +190,7 @@ persistence:
   enabled: true
   ## @param persistence.storageClass PVC Storage Class 
   ##
-  storageClass: ""
+  storageClass: "gp2"
   ## @param persistence.storagePath 
   ##
   storagePath: /tmp/hostpath_pv/stacks

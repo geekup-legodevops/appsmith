@@ -23,5 +23,5 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values: 
-		    {{- toYaml .Values.persistence.localCluster | nindent 12 }}
+            {{- toYaml .Values.persistence.localCluster | nindent 12 }}
 {{- end }}
