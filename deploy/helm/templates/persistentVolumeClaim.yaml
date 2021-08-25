@@ -8,7 +8,7 @@ spec:
   accessModes:
   {{- range .Values.persistence.accessModes }}
     - {{ . | quote }}
-  {{- end }}  
+  {{- end }}
   resources:
     requests:
       storage: {{ .Values.persistence.size | quote }}

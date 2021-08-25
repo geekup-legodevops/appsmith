@@ -6,20 +6,3 @@ metadata:
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
 {{- end }}
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"},"name":"gp2"},"parameters":{"fsType":"ext4","type":"gp2"},    "provisioner":"kubernetes.io/aws-ebs","volumeBindingMode":"WaitForFirstConsumer"}
-    storageclass.kubernetes.io/is-default-class: "true"
-  creationTimestamp: "2021-08-24T04:58:26Z"
-  name: gp2
-  resourceVersion: "251"
-  uid: 3fe86946-e60e-488b-8bd6-2236b387c53f
-parameters:
-  fsType: ext4
-  type: gp2
-provisioner: kubernetes.io/aws-ebs
-reclaimPolicy: Retain
-volumeBindingMode: WaitForFirstConsumer
