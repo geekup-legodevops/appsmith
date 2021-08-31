@@ -82,3 +82,10 @@ Image pull secret to pull image from private Container Registry
 {{- define "imagePullSecret" }}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imageCredentials.registry (printf "%s:%s" .Values.imageCredentials.username .Values.imageCredentials.password | b64enc) | b64enc }}
 {{- end }}
+
+{{/*
+Return the appropriate apiVersion for the object
+*/}}
+{{- define "apiVersion" -}}
+{{- default "storage.k8s.io/v1" .Values.apiVersion -}}
+{{- end -}}

@@ -1,20 +1,22 @@
+{{- if and .Values.storageClass.enabled .Values.persistence.localStorage }}
 apiVersion: {{ template "apiVersion" }}
 kind: StorageClass
-{{- if .Values.persistence.localStorage }}
 metadata:
   name: {{ .Values.persistence.storageClass }}
 provisioner: kubernetes.io/no-provisioner 
 volumeBindingMode: WaitForFirstConsumer
-{{- else }}
+{{- else if and .Values.storageClass.enabled }}
+apiVersion: {{ template "apiVersion" }}
+kind: StorageClass
 metadata:
   name: {{ .Values.persistence.storageClass }}
-	{{- if or .Values.storageClass.annotations .Values.storageClass.defaultClass }}
+  {{- if or .Values.storageClass.annotations .Values.storageClass.defaultClass }}
   annotations:
-	{{ toYaml .Values.storageClass.annotations | indent 4}}
-	{{- end }}
-	{{- if .Values.storageClass.defaultClass }}
+  {{ toYaml .Values.storageClass.annotations | indent 4}}
+  {{- end }}
+  {{- if .Values.storageClass.defaultClass }}
     storageclass.kubernetes.io/is-default-class: "true"
-	{{- end }}
+  {{- end }}
 volumeBindingMode: {{ .Values.storageClass.bindingMode }}
 provisioner: {{ .Values.storageClass.provisioner }}
 allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
