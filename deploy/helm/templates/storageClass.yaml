@@ -2,16 +2,19 @@
 apiVersion: {{ template "apiVersion" }}
 kind: StorageClass
 metadata:
-  name: {{ .Values.persistence.storageClass }}
-provisioner: kubernetes.io/no-provisioner 
+  name: {{ .Values.persistence.storageClass }}  
+provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
-{{- else if and .Values.storageClass.enabled }}
+---
+{{- else if .Values.storageClass.enabled }}
 apiVersion: {{ template "apiVersion" }}
 kind: StorageClass
 metadata:
   name: {{ .Values.persistence.storageClass }}
   {{- if or .Values.storageClass.annotations .Values.storageClass.defaultClass }}
   annotations:
+  {{- end }}
+  {{- if .Values.storageClass.annotations }}
   {{ toYaml .Values.storageClass.annotations | indent 4}}
   {{- end }}
   {{- if .Values.storageClass.defaultClass }}

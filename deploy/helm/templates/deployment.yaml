@@ -7,7 +7,7 @@ metadata:
     {{- include "appsmith.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   {{- end }}
   {{- if .Values.useStatefulSet }}
   serviceName: {{ include "appsmith.fullname" . }}
@@ -57,7 +57,7 @@ spec:
         - name: {{ .Values.containerName }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -81,7 +81,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: {{ .Values.persistence.mountPath }}
+              mountPath: /appsmith-stacks
       volumes:
   {{- if not .Values.persistence.enabled }}
       - name: data
