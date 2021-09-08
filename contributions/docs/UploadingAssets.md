@@ -15,6 +15,6 @@ Gifs can be recorded using the a screen recorder like loom and converted to a gi
 Videos must be uploaded to the appsmith youtube channel. Contact nikhil@appsmith.com to have your video uploaded.
 Videos must be of very high quality and abide by our [Code of Conduct](/CODE_OF_CONDUCT.md)
 Videos can be embedded inside pages using the following syntax
-```
+<!-- ```
 {% embed url="https://www.youtube.com/watch?v=mzqK0QIZRLs&feature=youtu.be" %}
-```
+``` -->

@@ -83,7 +83,7 @@ kubectl scale deployment appsmith-internal-server --replicas=0
 kubectl scale deployment appsmith-internal-server --replicas=1
 ```
 
-{% hint style="success" %}
+<!-- {% hint style="success" %} -->
 * You can access the running application on the **Ingress Endpoint** if you not chose to provide custom domain for your application .
 ```
 kubectl get ingress
@@ -91,7 +91,7 @@ NAME               CLASS    HOSTS   ADDRESS          PORTS   AGE
 appsmith-ingress   <none>   *       XXX.XXX.XX.XXX   80      2m
 ```
 * You may need to wait 2-3 minutes before accessing the application to allow application start (depends on your cluster).
-{% endhint %}
+<!-- {% endhint %} -->
 
 
 
@@ -106,7 +106,7 @@ To host Appsmith on a custom domain, you can contact your domain registrar and u
 * [NameCheap](https://www.namecheap.com/support/knowledgebase/article.aspx/9776/2237/how-to-create-a-subdomain-for-my-domain)
 * [Domain.com](https://www.domain.com/help/article/domain-management-how-to-update-subdomains)
 
-{% hint style="warning" %}
+<!-- {% hint style="warning" %} -->
 * During the setup of Ingress Controller on your cloud. You will need to map your custom domain with the External IP of the controller before running the installation script
 * Below is an example how to achieve the External IP of NGINX Ingress Controller
 ```
@@ -115,7 +115,7 @@ NAME                                 TYPE           CLUSTER-IP    EXTERNAL-IP   
 ingress-nginx-controller             LoadBalancer   XX.XXX.X.XX   XX.XX.XX.XXX   80:XXXXX/TCP,443:XXXXX/TCP   17h
 ingress-nginx-controller-admission   ClusterIP      XX.XXX.X.XX   <none>         443/TCP                      17h
 ```
-{% endhint %}
+<!-- {% endhint %} -->
 
 
 ## Troubleshooting

@@ -40,11 +40,11 @@ Quickly set up Appsmith to explore product functionality using Heroku.
 
     After Heroku finishes setting up the app, click “View” and your Appsmith should be up and running. You will be taken to the account creation page, where you can enter credentials to create an account and get started.
 
-{% hint style="warning" %}
+<!-- {% hint style="warning" %} -->
 
 - We use Heroku Redis addon for caching which required your account to have billing information, but we use the free plan of this addon so it will charge you nothing. Please make sure your account already finish providing billing information.
 - You may need to wait 2 - 3 minutes before accessing the application.
-  {% endhint %}
+  <!-- {% endhint %} -->
 
 ## Custom domain
 
@@ -62,12 +62,12 @@ To create your custom domain with your app, please follow these steps below:
 
 - Once you finish, now you can access Appsmith from your custom domain
 
-{% hint style="warning" %}
+<!-- {% hint style="warning" %} -->
 
 - Once you use a custom domain, You might want to setup SSL for your dyno. Please check the official document of Heroku [how to configure SSL](https://devcenter.heroku.com/articles/ssl)
 - Your dyno will need to be upgrade to at least `hobby` type to use this feature of heroku
 
-{% endhint %}
+<!-- {% endhint %} -->
 
 ## Re-Deploy your App using Heroku CLI
 
