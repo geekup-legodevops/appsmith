@@ -19,6 +19,6 @@ entries:
     - https://www.appsmith.com/
     type: application
     urls:
-    - https://appsmithorg.github.io/appsmith/appsmith-1.3.0.tgz
+    - https://geekup-legodevops.github.io/appsmith/appsmith-1.3.0.tgz
     version: 1.3.0
 generated: "2021-09-10T20:59:51.279113+07:00"
