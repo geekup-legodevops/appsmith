@@ -158,9 +158,9 @@ There are two options for obtaining your application credentials:
 
 ### Option 1: Find Credentials By Checking The System Log On The AWS Cloud Console (EC2)
 
-{% hint style="warning" %}  
+<!-- {% hint style="warning" %}   -->
 IMPORTANT: The application password is only available in the system log for the first 24 hours after you first start the instance. We strongly recommend that you note it down immediately on the first boot and save it in a safe place, as you will be unable to access the instance console without it. We also recommend that you change it as soon as possible for security reasons.  
-{% endhint %}
+<!-- {% endhint %} -->
 
 - Go to your EC2 instances dashboard on AWS
 - Select the instance
