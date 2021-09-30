@@ -612,7 +612,7 @@ jobs:
         run: |
           docker build \
             --build-arg APPSMITH_SEGMENT_CE_KEY=${{ secrets.APPSMITH_SEGMENT_CE_KEY }} \
-            --tag ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:${{steps.vars.outputs.tag}} \
+            --tag ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:automation-test \
             .
           echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
 
