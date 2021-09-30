@@ -616,6 +616,7 @@ jobs:
             .
           echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker images
+          docker push ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:automation-test
 
       - name: Build and push master image to Docker Hub with commit tag
         if: success() && github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
