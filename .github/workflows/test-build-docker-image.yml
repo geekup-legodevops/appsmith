@@ -638,4 +638,5 @@ jobs:
             ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:automation-test
           sleep 180
           cd $GITHUB_WORKSPACE/deploy/test-scripts/docker
+          chmod +x run-test.sh
           ./run-test.sh
