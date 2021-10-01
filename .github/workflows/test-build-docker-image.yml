@@ -635,7 +635,7 @@ jobs:
         run: |
           docker run \
             -p 80:80 \
-            -n appsmith\
+            --name appsmith \
             ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:automation-test
           sleep 180
           cd $GITHUB_WORKSPACE/deploy/test-scripts/docker
