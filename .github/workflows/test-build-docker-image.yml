@@ -628,3 +628,15 @@ jobs:
             .
           echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker push --all-tags ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith-ce
+      
+      - name: Test Docker image
+        if: success() && github.ref == 'refs/heads/feature/auto-test-fat-container' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        working-directory: "."
+        run: |
+          docker run \
+            ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:automation-test \
+            -p 80:80 \
+            -n appsmith
+          sleep 180
+          cd $GITHUB_WORKSPACE/deploy/test-scripts/docker
+          ./run-test.sh
