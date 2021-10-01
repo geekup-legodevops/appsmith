@@ -634,9 +634,10 @@ jobs:
         working-directory: "."
         run: |
           docker run \
-            ${{ secrets.DOCKER_HUB_ORGANIZATION }}/appsmith:automation-test \
+            ${{ secrets.DOCKER_HUB_ORGANIZATION }}/
             -p 80:80 \
-            -n appsmith
+            -n appsmith\
+            appsmith:automation-test
           sleep 180
           cd $GITHUB_WORKSPACE/deploy/test-scripts/docker
           ./run-test.sh
