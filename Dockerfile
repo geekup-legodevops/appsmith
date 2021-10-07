@@ -25,7 +25,8 @@ RUN wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
 RUN echo "deb [ arch=amd64,arm64 ]http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list \
   && apt-get remove wget -y
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-  && apt-get -y install --no-install-recommends -y mongodb-org=4.4.6 nodejs redis \
+	&& curl -s https://packagecloud.io/install/repositories/netdata/netdata/script.deb.sh | bash \
+  && apt-get -y install --no-install-recommends -y mongodb-org=4.4.6 nodejs redis netdata\
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -89,5 +90,6 @@ ENV PATH /opt/appsmith/utils/node_modules/.bin:$PATH
 EXPOSE 80
 EXPOSE 443
 EXPOSE 9001
+EXPOSE 19999
 ENTRYPOINT [ "/opt/appsmith/entrypoint.sh" ]
 CMD ["/usr/bin/supervisord","-n"]

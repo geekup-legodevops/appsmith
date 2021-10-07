@@ -136,6 +136,7 @@ configure_supervisord() {
 	fi
 
 	cp -f "$SUPERVISORD_CONF_PATH/application_process/"*.conf /etc/supervisor/conf.d
+	cp  "$SUPERVISORD_CONF_PATH/netdata.conf" /etc/supervisor/conf.d/
 	if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:$MONGO_INITDB_ROOT_PASSWORD@localhost/appsmith" ]]; then
 		cp "$SUPERVISORD_CONF_PATH/mongodb.conf" /etc/supervisor/conf.d/
 	fi
