@@ -68,7 +68,9 @@ COPY ./app/rts/node_modules rts/node_modules
 COPY ./deploy/docker/templates/nginx_app.conf.sh ./deploy/docker/templates/mongo-init.js.sh ./deploy/docker/templates/docker.env.sh templates/
 
 # Copy Netdata config
-COPY ./deploy/docker/templates/netdata/netdata.conf /etc/netdata
+COPY ./deploy/docker/templates/netdata/netdata.conf /etc/netdata/
+COPY ./deploy/docker/templates/netdata/httpcheck.conf /etc/netdata/go.d/
+COPY ./deploy/docker/templates/netdata/x509check.conf.sh templates/
 
 # Add bootstrapfile
 COPY ./deploy/docker/entrypoint.sh ./deploy/docker/scripts/* ./
