@@ -612,7 +612,7 @@ jobs:
           (github.event_name == 'pull_request_review' && 
           github.event.review.state == 'approved' && 
           github.event.pull_request.head.repo.full_name == github.repository))
-            working-directory: "."
+        working-directory: "."
         run: |
           docker build \
             --build-arg APPSMITH_SEGMENT_CE_KEY=${{ secrets.APPSMITH_SEGMENT_CE_KEY }} \
