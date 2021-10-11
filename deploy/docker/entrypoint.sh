@@ -126,6 +126,7 @@ configure_ssl() {
 	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
 		init_ssl_cert "$APPSMITH_CUSTOM_DOMAIN"
 		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/netdata/go.d/x509check.conf"
+		supervisorctl restart netdata
 	fi
 	nginx -s stop
 }
