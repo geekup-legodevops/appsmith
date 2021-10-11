@@ -4,21 +4,18 @@
 email=example%40appsmith.com
 password=$(openssl rand -base64 12)
 
-# Get EC2 instance public IP
-instance_ip=localhost
-
 # Backend API
-status_code=$(curl -s -o /dev/null -I -w "%{http_code}" http://$instance_ip/api/v1 || true)
+status_code=$(curl -s -o /dev/null -I -w "%{http_code}" http://localhost/api/v1 || true)
 
 # Create account
-status_code_register=$(curl -X POST --write-out %{http_code} --silent --output /dev/null http://$instance_ip/api/v1/users \
+status_code_register=$(curl -X POST --write-out %{http_code} --silent --output /dev/null http://localhost/api/v1/users \
     -H "Content-Type: application/x-www-form-urlencoded" \
-    -H "Referer: http://$instance_ip/user/signup" \
+    -H "Referer: http://localhost/user/signup" \
     --data-raw "email=$email&password=$password")
 
 # Login
-status_code_login=$(curl -X POST --write-out %{http_code} --silent --output /dev/null "http://$instance_ip/api/v1/login" \
-    -H "Referer: http://$instance_ip/user/login" \
+status_code_login=$(curl -X POST --write-out %{http_code} --silent --output /dev/null "http://localhost/api/v1/login" \
+    -H "Referer: http://localhost/user/login" \
     --data-raw "username=$email&password=$password")
 
 count_fail=0
