@@ -13,7 +13,7 @@ ENV LC_ALL C.UTF-8
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
   supervisor curl cron certbot nginx gnupg wget \
   software-properties-common gettext openjdk-11-jre \
-  python3-pip python-setuptools git \
+  python3-pip python-setuptools git vim \
   && add-apt-repository ppa:redislabs/redis \
   && pip install --no-cache-dir git+https://github.com/coderanger/supervisor-stdout \
   && apt-get remove -y git python3-pip \
@@ -66,6 +66,9 @@ COPY ./app/rts/node_modules rts/node_modules
 
 # Nginx & MongoDB config template - Configuration layer
 COPY ./deploy/docker/templates/nginx_app.conf.sh ./deploy/docker/templates/mongo-init.js.sh ./deploy/docker/templates/docker.env.sh templates/
+
+# Copy Netdata config
+COPY ./deploy/docker/templates/netdata/netdata.conf /etc/netdata
 
 # Add bootstrapfile
 COPY ./deploy/docker/entrypoint.sh ./deploy/docker/scripts/* ./

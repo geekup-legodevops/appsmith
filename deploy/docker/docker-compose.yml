@@ -7,9 +7,9 @@ services:
       context: ../../
     container_name: appsmith
     ports:
-      - "80:80"
-      - "443:443"
+      - "1180:80"
       - "9001:9001"
+      - "19990:19999"
     volumes:
       - ./stacks:/appsmith-stacks
 
