@@ -13,7 +13,7 @@ ENV LC_ALL C.UTF-8
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
   supervisor curl cron certbot nginx gnupg wget \
   software-properties-common gettext openjdk-11-jre \
-  python3-pip python-setuptools git vim \
+  python3-pip python-setuptools git \
   && add-apt-repository ppa:redislabs/redis \
   && pip install --no-cache-dir git+https://github.com/coderanger/supervisor-stdout \
   && apt-get remove -y git python3-pip \
@@ -29,6 +29,13 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
   && apt-get -y install --no-install-recommends -y mongodb-org=4.4.6 nodejs redis netdata\
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+
+# Apply the permissions as described in
+# https://docs.netdata.cloud/docs/netdata-security/#netdata-directories, but own everything by root group due to https://github.com/netdata/netdata/pull/6543
+# hadolint ignore=DL3013
+RUN chown -R  root:netdata /usr/share/netdata
+
 
 # Clean up cache file - Service layer
 RUN rm -rf \
