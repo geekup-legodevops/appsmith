@@ -147,6 +147,24 @@ configure_supervisord() {
 	fi
 }
 
+configure_netdata() {
+	echo "Configure netdata"
+	NETDATA_CONF_PATH="/etc/netdata"
+
+	echo "$APPSMITH_MAIL_ENABLED"
+
+	if [[ "$APPSMITH_MAIL_ENABLED" = "true" ]]; then
+		echo "Configure email"
+		bash "/opt/appsmith/templates/health_alarm_notify.conf.sh" "$APPSMITH_MAIL_FROM" "$APPSMITH_REPLY_TO" > "$NETDATA_CONF_PATH/health_alarm_notify.conf"
+		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/root/.msmtprc"
+		chmod 600 "/root/.msmtprc"
+	fi
+
+	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
+		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/netdata/go.d/x509check.conf"
+	fi
+}
+
 echo 'Checking configuration file'
 CONF_PATH="/appsmith-stacks/configuration"
 ENV_PATH="$CONF_PATH/docker.env"
@@ -196,6 +214,7 @@ fi
 init_mongodb
 configure_ssl
 configure_supervisord
+configure_netdata
 
 # Ensure the restore path exists in the container, so an archive can be copied to it, if need be.
 mkdir -p /appsmith-stacks/data/{backup,restore}

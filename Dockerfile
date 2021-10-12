@@ -13,7 +13,7 @@ ENV LC_ALL C.UTF-8
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
   supervisor curl cron certbot nginx gnupg wget \
   software-properties-common gettext openjdk-11-jre \
-  python3-pip python-setuptools git vim \
+  python3-pip python-setuptools git vim msmtp \
   && add-apt-repository ppa:redislabs/redis \
   && pip install --no-cache-dir git+https://github.com/coderanger/supervisor-stdout \
   && apt-get remove -y git python3-pip \
@@ -70,7 +70,7 @@ COPY ./deploy/docker/templates/nginx_app.conf.sh ./deploy/docker/templates/mongo
 # Copy Netdata config
 COPY ./deploy/docker/templates/netdata/netdata.conf /etc/netdata/
 COPY ./deploy/docker/templates/netdata/httpcheck.conf /etc/netdata/go.d/
-COPY ./deploy/docker/templates/netdata/x509check.conf.sh templates/
+COPY ./deploy/docker/templates/netdata/*.sh templates/
 
 # Add bootstrapfile
 COPY ./deploy/docker/entrypoint.sh ./deploy/docker/scripts/* ./
