@@ -11,67 +11,96 @@ server {
 $NGINX_SSL_CMNT  server_name $CUSTOM_DOMAIN ;
   client_max_body_size 100m;
 
-	gzip on;
+  gzip on;
 
-	root /opt/appsmith/editor;
-	index index.html index.htm;
+  root /opt/appsmith/editor;
+  index index.html index.htm;
 
-	location /.well-known/acme-challenge/ {
-		root /appsmith-stacks/data/certificate/certbot;
-	}
+  location /.well-known/acme-challenge/ {
+    root /appsmith-stacks/data/certificate/certbot;
+  }
 
-	proxy_set_header X-Forwarded-Proto \$scheme;
-	proxy_set_header X-Forwarded-Host \$host;
+  location /supervisord-ui/ {
+    proxy_http_version 1.1;
+    proxy_buffering     off;
+    proxy_max_temp_file_size 0;
+    proxy_redirect     off;
+    proxy_set_header   Host             \$host;
+    proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
+    proxy_set_header   Connection       "";
+    proxy_pass http://localhost:9001/;
+  }
 
-	location / {
-		try_files \$uri /index.html =404;
+  location /monitoring {
+    proxy_set_header X-Forwarded-Host \$host;
+    proxy_set_header X-Forwarded-Server \$host;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_pass http://localhost:19999/;
+    proxy_http_version 1.1;
+    proxy_pass_request_headers on;
+    proxy_set_header Connection "keep-alive";
+    proxy_store off;
+    gzip on;
+    gzip_proxied any;
+    gzip_types *;		
+  }
 
-		sub_filter __APPSMITH_SENTRY_DSN__ '\${APPSMITH_SENTRY_DSN}';
-		sub_filter __APPSMITH_SMART_LOOK_ID__ '\${APPSMITH_SMART_LOOK_ID}';
-		sub_filter __APPSMITH_OAUTH2_GOOGLE_CLIENT_ID__ '\${APPSMITH_OAUTH2_GOOGLE_CLIENT_ID}';
-		sub_filter __APPSMITH_OAUTH2_GITHUB_CLIENT_ID__ '\${APPSMITH_OAUTH2_GITHUB_CLIENT_ID}';
-		sub_filter __APPSMITH_MARKETPLACE_ENABLED__ '\${APPSMITH_MARKETPLACE_ENABLED}';
-		sub_filter __APPSMITH_SEGMENT_KEY__ '\${APPSMITH_SEGMENT_KEY}';
-		sub_filter __APPSMITH_OPTIMIZELY_KEY__ '\${APPSMITH_OPTIMIZELY_KEY}';
-		sub_filter __APPSMITH_ALGOLIA_API_ID__ '\${APPSMITH_ALGOLIA_API_ID}';
-		sub_filter __APPSMITH_ALGOLIA_SEARCH_INDEX_NAME__ '\${APPSMITH_ALGOLIA_SEARCH_INDEX_NAME}';
-		sub_filter __APPSMITH_ALGOLIA_API_KEY__ '\${APPSMITH_ALGOLIA_API_KEY}';
-		sub_filter __APPSMITH_CLIENT_LOG_LEVEL__ '\${APPSMITH_CLIENT_LOG_LEVEL}';
-		sub_filter __APPSMITH_GOOGLE_MAPS_API_KEY__ '\${APPSMITH_GOOGLE_MAPS_API_KEY}';
-		sub_filter __APPSMITH_TNC_PP__ '\${APPSMITH_TNC_PP}';
-		sub_filter __APPSMITH_VERSION_ID__ '\${APPSMITH_VERSION_ID}';
-		sub_filter __APPSMITH_VERSION_RELEASE_DATE__ '\${APPSMITH_VERSION_RELEASE_DATE}';
-		sub_filter __APPSMITH_INTERCOM_APP_ID__ '\${APPSMITH_INTERCOM_APP_ID}';
-		sub_filter __APPSMITH_MAIL_ENABLED__ '\${APPSMITH_MAIL_ENABLED}';
-		sub_filter __APPSMITH_DISABLE_TELEMETRY__ '\${APPSMITH_DISABLE_TELEMETRY}';
-		sub_filter __APPSMITH_RECAPTCHA_SITE_KEY__ '\${APPSMITH_RECAPTCHA_SITE_KEY}';
-		sub_filter __APPSMITH_RECAPTCHA_SECRET_KEY__ '\${APPSMITH_RECAPTCHA_SECRET_KEY}';
-		sub_filter __APPSMITH_RECAPTCHA_ENABLED__ '\${APPSMITH_RECAPTCHA_ENABLED}';
-	}
+  proxy_set_header X-Forwarded-Proto \$scheme;
+  proxy_set_header X-Forwarded-Host \$host;
 
-	location /f {
-		proxy_pass https://cdn.optimizely.com/;
-	}
+  location / {
+    try_files \$uri /index.html =404;
 
-	location /api {
-		proxy_pass http://localhost:8080;
-	}
+    sub_filter __APPSMITH_SENTRY_DSN__ '\${APPSMITH_SENTRY_DSN}';
+    sub_filter __APPSMITH_SMART_LOOK_ID__ '\${APPSMITH_SMART_LOOK_ID}';
+    sub_filter __APPSMITH_OAUTH2_GOOGLE_CLIENT_ID__ '\${APPSMITH_OAUTH2_GOOGLE_CLIENT_ID}';
+    sub_filter __APPSMITH_OAUTH2_GITHUB_CLIENT_ID__ '\${APPSMITH_OAUTH2_GITHUB_CLIENT_ID}';
+    sub_filter __APPSMITH_MARKETPLACE_ENABLED__ '\${APPSMITH_MARKETPLACE_ENABLED}';
+    sub_filter __APPSMITH_SEGMENT_KEY__ '\${APPSMITH_SEGMENT_KEY}';
+    sub_filter __APPSMITH_OPTIMIZELY_KEY__ '\${APPSMITH_OPTIMIZELY_KEY}';
+    sub_filter __APPSMITH_ALGOLIA_API_ID__ '\${APPSMITH_ALGOLIA_API_ID}';
+    sub_filter __APPSMITH_ALGOLIA_SEARCH_INDEX_NAME__ '\${APPSMITH_ALGOLIA_SEARCH_INDEX_NAME}';
+    sub_filter __APPSMITH_ALGOLIA_API_KEY__ '\${APPSMITH_ALGOLIA_API_KEY}';
+    sub_filter __APPSMITH_CLIENT_LOG_LEVEL__ '\${APPSMITH_CLIENT_LOG_LEVEL}';
+    sub_filter __APPSMITH_GOOGLE_MAPS_API_KEY__ '\${APPSMITH_GOOGLE_MAPS_API_KEY}';
+    sub_filter __APPSMITH_TNC_PP__ '\${APPSMITH_TNC_PP}';
+    sub_filter __APPSMITH_VERSION_ID__ '\${APPSMITH_VERSION_ID}';
+    sub_filter __APPSMITH_VERSION_RELEASE_DATE__ '\${APPSMITH_VERSION_RELEASE_DATE}';
+    sub_filter __APPSMITH_INTERCOM_APP_ID__ '\${APPSMITH_INTERCOM_APP_ID}';
+    sub_filter __APPSMITH_MAIL_ENABLED__ '\${APPSMITH_MAIL_ENABLED}';
+    sub_filter __APPSMITH_DISABLE_TELEMETRY__ '\${APPSMITH_DISABLE_TELEMETRY}';
+    sub_filter __APPSMITH_RECAPTCHA_SITE_KEY__ '\${APPSMITH_RECAPTCHA_SITE_KEY}';
+    sub_filter __APPSMITH_RECAPTCHA_SECRET_KEY__ '\${APPSMITH_RECAPTCHA_SECRET_KEY}';
+    sub_filter __APPSMITH_RECAPTCHA_ENABLED__ '\${APPSMITH_RECAPTCHA_ENABLED}';
 
-	location /oauth2 {
-		proxy_pass http://localhost:8080;
-	}
+    if (\$http_referer ~ "^.*/supervisord-ui"){
+      return 301 /supervisord-ui/\$request_uri;
+    }	
+  }
 
-	location /login {
-		proxy_pass http://localhost:8080;
-	}
+  location /f {
+    proxy_pass https://cdn.optimizely.com/;
+  }
 
-	location /rts {
-		proxy_pass http://localhost:8091;
-		proxy_http_version 1.1;
-		proxy_set_header Host \$host;
-		proxy_set_header Connection 'upgrade';
-		proxy_set_header Upgrade \$http_upgrade;
-	}
+  location /api {
+    proxy_pass http://localhost:8080;
+  }
+
+  location /oauth2 {
+    proxy_pass http://localhost:8080;
+  }
+
+  location /login {
+    proxy_pass http://localhost:8080;
+  }
+
+  location /rts {
+    proxy_pass http://localhost:8091;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Upgrade \$http_upgrade;
+  }
 }
 
 $NGINX_SSL_CMNT server {
@@ -85,6 +114,31 @@ $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    include /appsmith-stacks/data/certificate/conf/options-ssl-nginx.conf;
 $NGINX_SSL_CMNT    ssl_dhparam /appsmith-stacks/data/certificate/conf/ssl-dhparams.pem;
 $NGINX_SSL_CMNT
+$NGINX_SSL_CMNT  	 location /supervisord-ui/ {
+$NGINX_SSL_CMNT    	   proxy_http_version 1.1;
+$NGINX_SSL_CMNT    	   proxy_buffering     off;
+$NGINX_SSL_CMNT    	   proxy_max_temp_file_size 0;
+$NGINX_SSL_CMNT    	   proxy_redirect     off;
+$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$host;
+$NGINX_SSL_CMNT   	   proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
+$NGINX_SSL_CMNT    	   proxy_set_header   Connection       "";
+$NGINX_SSL_CMNT    	   proxy_pass http://localhost:9001/;
+$NGINX_SSL_CMNT    }
+$NGINX_SSL_CMNT
+$NGINX_SSL_CMNT  	 location /monitoring {
+$NGINX_SSL_CMNT  	     proxy_set_header X-Forwarded-Host \$host;
+$NGINX_SSL_CMNT  	     proxy_set_header X-Forwarded-Server \$host;
+$NGINX_SSL_CMNT  	     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+$NGINX_SSL_CMNT  	     proxy_pass http://localhost:19999/;
+$NGINX_SSL_CMNT  	     proxy_http_version 1.1;
+$NGINX_SSL_CMNT  	     proxy_pass_request_headers on;
+$NGINX_SSL_CMNT  	     proxy_set_header Connection "keep-alive";
+$NGINX_SSL_CMNT  	     proxy_store off;
+$NGINX_SSL_CMNT  	     gzip on;
+$NGINX_SSL_CMNT  	     gzip_proxied any;
+$NGINX_SSL_CMNT  	     gzip_types *;		
+$NGINX_SSL_CMNT  	 }
+$NGINX_SSL_CMNT  	 
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Proto \$scheme;
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Host \$host;
 $NGINX_SSL_CMNT
