@@ -20,12 +20,16 @@ $NGINX_SSL_CMNT  server_name $CUSTOM_DOMAIN ;
     root /appsmith-stacks/data/certificate/certbot;
   }
 
+  location = /supervisord-ui {
+    return 301 /supervisord-ui/;
+  }
+
   location /supervisord-ui/ {
     proxy_http_version 1.1;
     proxy_buffering     off;
     proxy_max_temp_file_size 0;
     proxy_redirect     off;
-    proxy_set_header   Host             \$host;
+    proxy_set_header   Host             \$host/supervisord-ui/;
     proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
     proxy_set_header   Connection       "";
     proxy_pass http://localhost:9001/;
@@ -119,7 +123,8 @@ $NGINX_SSL_CMNT    	   proxy_http_version 1.1;
 $NGINX_SSL_CMNT    	   proxy_buffering     off;
 $NGINX_SSL_CMNT    	   proxy_max_temp_file_size 0;
 $NGINX_SSL_CMNT    	   proxy_redirect     off;
-$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$host;
+$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$host/supervisord-ui/;
+$NGINX_SSL_CMNT    	   proxy_set_header   X-Real-IP        $remote_addr;
 $NGINX_SSL_CMNT   	   proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
 $NGINX_SSL_CMNT    	   proxy_set_header   Connection       "";
 $NGINX_SSL_CMNT    	   proxy_pass http://localhost:9001/;
