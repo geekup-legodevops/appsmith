@@ -8,6 +8,7 @@ services:
     container_name: appsmith
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./stacks:/appsmith-stacks
 

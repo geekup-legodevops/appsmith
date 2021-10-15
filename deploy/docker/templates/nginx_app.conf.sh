@@ -4,6 +4,12 @@ set -o nounset
 
 NGINX_SSL_CMNT="$1"
 CUSTOM_DOMAIN="$2"
+MONITORING_ENABLED="$3"
+MONITORING_CMNT="#"
+
+if [[ "$MONITORING_ENABLED" = "true" ]]; then
+  MONITORING_CMNT=""
+fi
 
 cat <<EOF
 server {
@@ -33,21 +39,30 @@ $NGINX_SSL_CMNT  server_name $CUSTOM_DOMAIN ;
     proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
     proxy_set_header   Connection       "";
     proxy_pass http://localhost:9001/;
+
+    auth_basic "Protected";
+    auth_basic_user_file /etc/nginx/passwords;
   }
 
-  location /monitoring {
-    proxy_set_header X-Forwarded-Host \$host;
-    proxy_set_header X-Forwarded-Server \$host;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_pass http://localhost:19999/;
-    proxy_http_version 1.1;
-    proxy_pass_request_headers on;
-    proxy_set_header Connection "keep-alive";
-    proxy_store off;
-    gzip on;
-    gzip_proxied any;
-    gzip_types *;		
-  }
+$MONITORING_CMNT  location = /monitoring {
+$MONITORING_CMNT    return 301 /monitoring/;
+$MONITORING_CMNT  }
+$MONITORING_CMNT
+$MONITORING_CMNT  location /monitoring {
+$MONITORING_CMNT    proxy_set_header X-Forwarded-Host \$host;
+$MONITORING_CMNT    proxy_set_header X-Forwarded-Server \$host;
+$MONITORING_CMNT    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+$MONITORING_CMNT    proxy_pass http://localhost:19999/;
+$MONITORING_CMNT    proxy_http_version 1.1;
+$MONITORING_CMNT    proxy_pass_request_headers on;
+$MONITORING_CMNT    proxy_set_header Connection "keep-alive";
+$MONITORING_CMNT    proxy_store off;
+$MONITORING_CMNT    auth_basic "Protected";
+$MONITORING_CMNT    auth_basic_user_file passwords;
+$MONITORING_CMNT    gzip on;
+$MONITORING_CMNT    gzip_proxied any;
+$MONITORING_CMNT    gzip_types *;		
+$MONITORING_CMNT  }
 
   proxy_set_header X-Forwarded-Proto \$scheme;
   proxy_set_header X-Forwarded-Host \$host;
@@ -124,25 +139,29 @@ $NGINX_SSL_CMNT    	   proxy_buffering     off;
 $NGINX_SSL_CMNT    	   proxy_max_temp_file_size 0;
 $NGINX_SSL_CMNT    	   proxy_redirect     off;
 $NGINX_SSL_CMNT    	   proxy_set_header   Host             \$host/supervisord-ui/;
-$NGINX_SSL_CMNT    	   proxy_set_header   X-Real-IP        $remote_addr;
+$NGINX_SSL_CMNT    	   proxy_set_header   X-Real-IP        \$remote_addr;
 $NGINX_SSL_CMNT   	   proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
 $NGINX_SSL_CMNT    	   proxy_set_header   Connection       "";
 $NGINX_SSL_CMNT    	   proxy_pass http://localhost:9001/;
+$NGINX_SSL_CMNT    	   auth_basic "Protected";
+$NGINX_SSL_CMNT    	   auth_basic_user_file /etc/nginx/passwords;
 $NGINX_SSL_CMNT    }
 $NGINX_SSL_CMNT
-$NGINX_SSL_CMNT  	 location /monitoring {
-$NGINX_SSL_CMNT  	     proxy_set_header X-Forwarded-Host \$host;
-$NGINX_SSL_CMNT  	     proxy_set_header X-Forwarded-Server \$host;
-$NGINX_SSL_CMNT  	     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-$NGINX_SSL_CMNT  	     proxy_pass http://localhost:19999/;
-$NGINX_SSL_CMNT  	     proxy_http_version 1.1;
-$NGINX_SSL_CMNT  	     proxy_pass_request_headers on;
-$NGINX_SSL_CMNT  	     proxy_set_header Connection "keep-alive";
-$NGINX_SSL_CMNT  	     proxy_store off;
-$NGINX_SSL_CMNT  	     gzip on;
-$NGINX_SSL_CMNT  	     gzip_proxied any;
-$NGINX_SSL_CMNT  	     gzip_types *;		
-$NGINX_SSL_CMNT  	 }
+$NGINX_SSL_CMNT $MONITORING_CMNT  	 location /monitoring/ {
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_set_header X-Forwarded-Host \$host;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_set_header X-Forwarded-Server \$host;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_pass http://localhost:19999/;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_http_version 1.1;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_pass_request_headers on;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_set_header Connection "keep-alive";
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     proxy_store off;
+$NGINX_SSL_CMNT $MONITORING_CMNT    	 auth_basic "Protected";
+$NGINX_SSL_CMNT $MONITORING_CMNT    	 auth_basic_user_file /etc/nginx/passwords;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     gzip on;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     gzip_proxied any;
+$NGINX_SSL_CMNT $MONITORING_CMNT 	     gzip_types *;		
+$NGINX_SSL_CMNT $MONITORING_CMNT 	 }
 $NGINX_SSL_CMNT  	 
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Proto \$scheme;
 $NGINX_SSL_CMNT    proxy_set_header X-Forwarded-Host \$host;

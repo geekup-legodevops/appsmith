@@ -67,7 +67,7 @@ init_ssl_cert() {
 	fi
 
 	echo "Re-generating nginx config template with domain"
-	bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" >"/etc/nginx/conf.d/nginx_app.conf.template"
+	bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" "$MONITORING_ENABLED" >"/etc/nginx/conf.d/nginx_app.conf.template"
 
 	echo "Generating nginx configuration"
 	cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' >/etc/nginx/sites-available/default
@@ -117,7 +117,7 @@ configure_ssl() {
 	ln -s /appsmith-stacks/letsencrypt /etc/letsencrypt
 
 	echo "Generating nginx config template without domain"
-	bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+	bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" "$MONITORING_ENABLED" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
 	echo "Generating nginx configuration"
 	cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
@@ -126,7 +126,6 @@ configure_ssl() {
 	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
 		init_ssl_cert "$APPSMITH_CUSTOM_DOMAIN"
 		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/netdata/go.d/x509check.conf"
-		supervisorctl restart netdata
 	fi
 	nginx -s stop
 }
@@ -138,7 +137,9 @@ configure_supervisord() {
 	fi
 
 	cp -f "$SUPERVISORD_CONF_PATH/application_process/"*.conf /etc/supervisor/conf.d
-	cp  "$SUPERVISORD_CONF_PATH/netdata.conf" /etc/supervisor/conf.d/
+	if [[ "$MONITORING_ENABLED" = "true" ]]; then
+		cp  "$SUPERVISORD_CONF_PATH/netdata.conf" /etc/supervisor/conf.d/
+	fi
 	if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:$MONGO_INITDB_ROOT_PASSWORD@localhost/appsmith" ]]; then
 		cp "$SUPERVISORD_CONF_PATH/mongodb.conf" /etc/supervisor/conf.d/
 	fi
@@ -156,8 +157,9 @@ configure_netdata() {
 	if [[ "$APPSMITH_MAIL_ENABLED" = "true" ]]; then
 		echo "Configure email"
 		bash "/opt/appsmith/templates/health_alarm_notify.conf.sh" "$APPSMITH_MAIL_FROM" "$APPSMITH_REPLY_TO" > "$NETDATA_CONF_PATH/health_alarm_notify.conf"
-		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/root/.msmtprc"
-		chmod 600 "/root/.msmtprc"
+		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/var/lib/netdata/.msmtprc"
+		chown netdata:netdata "/var/lib/netdata/.msmtprc"
+		chmod 600 "/var/lib/netdata/.msmtprc"
 	fi
 
 	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
@@ -174,7 +176,8 @@ if ! [[ -e "$ENV_PATH" ]]; then
 	AUTO_GEN_MONGO_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	AUTO_GEN_ENCRYPTION_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
 	AUTO_GEN_ENCRYPTION_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-	bash "/opt/appsmith/templates/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "$ENV_PATH"
+	AUTO_GEN_AUTH_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	bash "/opt/appsmith/templates/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" "$AUTO_GEN_AUTH_PASSWORD" > "$ENV_PATH"
 fi
 
 if [[ -f /appsmith-stacks/configuration/docker.env ]]; then
@@ -209,6 +212,9 @@ if [[ -z "${APPSMITH_RECAPTCHA_SITE_KEY}" ]] || [[ -z "${APPSMITH_RECAPTCHA_SECR
 	unset APPSMITH_RECAPTCHA_SECRET_KEY
 	unset APPSMITH_RECAPTCHA_ENABLED
 fi
+
+echo "Generating Basic Authentication file"
+printf "$BASIC_AUTH_USER:$(openssl passwd -apr1 $BASIC_AUTH_PASSWORD)" > /etc/nginx/passwords
 
 # Main Section
 init_mongodb
