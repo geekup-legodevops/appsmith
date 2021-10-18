@@ -157,9 +157,9 @@ configure_netdata() {
 	if [[ "$APPSMITH_MAIL_ENABLED" = "true" ]]; then
 		echo "Configure email"
 		bash "/opt/appsmith/templates/health_alarm_notify.conf.sh" "$APPSMITH_MAIL_FROM" "$APPSMITH_REPLY_TO" > "$NETDATA_CONF_PATH/health_alarm_notify.conf"
-		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/var/lib/netdata/.msmtprc"
-		chown netdata:netdata "/var/lib/netdata/.msmtprc"
-		chmod 600 "/var/lib/netdata/.msmtprc"
+		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/var/cache/netdata/.msmtprc"
+		chown netdata:netdata "/var/cache/netdata/.msmtprc"
+		chmod 600 "/var/cache/netdata/.msmtprc"
 	fi
 
 	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then

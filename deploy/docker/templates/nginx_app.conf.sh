@@ -35,7 +35,7 @@ $NGINX_SSL_CMNT  server_name $CUSTOM_DOMAIN ;
     proxy_buffering     off;
     proxy_max_temp_file_size 0;
     proxy_redirect     off;
-    proxy_set_header   Host             \$host/supervisord-ui/;
+    proxy_set_header   Host             \$http_host/supervisord-ui/;
     proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
     proxy_set_header   Connection       "";
     proxy_pass http://localhost:9001/;
@@ -48,7 +48,7 @@ $MONITORING_CMNT  location = /monitoring {
 $MONITORING_CMNT    return 301 /monitoring/;
 $MONITORING_CMNT  }
 $MONITORING_CMNT
-$MONITORING_CMNT  location /monitoring {
+$MONITORING_CMNT  location /monitoring/ {
 $MONITORING_CMNT    proxy_set_header X-Forwarded-Host \$host;
 $MONITORING_CMNT    proxy_set_header X-Forwarded-Server \$host;
 $MONITORING_CMNT    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -65,7 +65,7 @@ $MONITORING_CMNT    gzip_types *;
 $MONITORING_CMNT  }
 
   proxy_set_header X-Forwarded-Proto \$scheme;
-  proxy_set_header X-Forwarded-Host \$host;
+  proxy_set_header X-Forwarded-Host \$http_host;
 
   location / {
     try_files \$uri /index.html =404;
@@ -138,7 +138,7 @@ $NGINX_SSL_CMNT    	   proxy_http_version 1.1;
 $NGINX_SSL_CMNT    	   proxy_buffering     off;
 $NGINX_SSL_CMNT    	   proxy_max_temp_file_size 0;
 $NGINX_SSL_CMNT    	   proxy_redirect     off;
-$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$host/supervisord-ui/;
+$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$http_host/supervisord-ui/;
 $NGINX_SSL_CMNT    	   proxy_set_header   X-Real-IP        \$remote_addr;
 $NGINX_SSL_CMNT   	   proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
 $NGINX_SSL_CMNT    	   proxy_set_header   Connection       "";
