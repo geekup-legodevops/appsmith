@@ -13,9 +13,10 @@ ENV LC_ALL C.UTF-8
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
   supervisor curl cron certbot nginx gnupg wget \
   software-properties-common gettext openjdk-11-jre \
-  python3-pip python-setuptools git msmtp\
+  python3-pip python-setuptools git msmtp \
   && add-apt-repository ppa:redislabs/redis \
   && pip install --no-cache-dir git+https://github.com/coderanger/supervisor-stdout \
+	&& pip install pymongo \
   && apt-get remove -y git python3-pip \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

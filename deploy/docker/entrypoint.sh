@@ -33,7 +33,7 @@ init_mongodb() {
 		mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH"
 		echo "Waiting 10s for mongodb init"
 		sleep 10
-		bash "/opt/appsmith/templates/mongo-init.js.sh" "$MONGO_INITDB_ROOT_USERNAME" "$MONGO_INITDB_ROOT_PASSWORD" >"/appsmith-stacks/configuration/mongo-init.js"
+		bash "/opt/appsmith/templates/mongo-init.js.sh" "$MONGO_INITDB_ROOT_USERNAME" "$MONGO_INITDB_ROOT_PASSWORD" "$MONGO_INITDB_DATABASE" >"/appsmith-stacks/configuration/mongo-init.js"
 		mongo "127.0.0.1/${MONGO_INITDB_DATABASE}" /appsmith-stacks/configuration/mongo-init.js
 		echo "Seeding db done"
 
@@ -163,8 +163,11 @@ configure_netdata() {
 	fi
 
 	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
-		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/netdata/go.d/x509check.conf"
+		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "$NETDATA_CONF_PATH/go.d/x509check.conf"
 	fi
+
+	bash "/opt/appsmith/templates/redis.conf.sh" "$APPSMITH_REDIS_URL" > "$NETDATA_CONF_PATH/go.d/redis.conf"
+	bash "/opt/appsmith/templates/mongodb.conf.sh" "$APPSMITH_MONGODB_URI" > "$NETDATA_CONF_PATH/python.d/mongodb.conf"
 }
 
 echo 'Checking configuration file'
