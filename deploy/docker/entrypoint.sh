@@ -168,6 +168,9 @@ configure_netdata() {
 
 	bash "/opt/appsmith/templates/redis.conf.sh" "$APPSMITH_REDIS_URL" > "$NETDATA_CONF_PATH/go.d/redis.conf"
 	bash "/opt/appsmith/templates/mongodb.conf.sh" "$APPSMITH_MONGODB_URI" > "$NETDATA_CONF_PATH/python.d/mongodb.conf"
+
+	echo "Remove default alarms"
+	rm /usr/lib/netdata/conf.d/health.d/*
 }
 
 echo 'Checking configuration file'
