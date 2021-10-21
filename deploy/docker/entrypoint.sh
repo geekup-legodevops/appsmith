@@ -133,7 +133,7 @@ configure_ssl() {
 configure_supervisord() {
 	SUPERVISORD_CONF_PATH="/opt/appsmith/templates/supervisord"
 	if [[ -f "/etc/supervisor/conf.d/"*.conf ]]; then
-		rm "/etc/supervisor/conf.d/"*
+		rm -f "/etc/supervisor/conf.d/"*
 	fi
 
 	cp -f "$SUPERVISORD_CONF_PATH/application_process/"*.conf /etc/supervisor/conf.d
@@ -170,7 +170,7 @@ configure_netdata() {
 	bash "/opt/appsmith/templates/mongodb.conf.sh" "$APPSMITH_MONGODB_URI" > "$NETDATA_CONF_PATH/python.d/mongodb.conf"
 
 	echo "Remove default alarms"
-	rm /usr/lib/netdata/conf.d/health.d/*
+	rm -f "/usr/lib/netdata/conf.d/health.d/"*
 }
 
 echo 'Checking configuration file'
