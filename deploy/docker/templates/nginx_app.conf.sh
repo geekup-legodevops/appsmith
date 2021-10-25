@@ -7,7 +7,7 @@ CUSTOM_DOMAIN="$2"
 
 cat <<EOF
 server {
-  listen 80;
+  listen ${PORT:-80} default_server;
 $NGINX_SSL_CMNT  server_name $CUSTOM_DOMAIN ;
   client_max_body_size 100m;
 
