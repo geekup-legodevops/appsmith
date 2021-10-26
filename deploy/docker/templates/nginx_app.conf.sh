@@ -26,16 +26,16 @@ $NGINX_SSL_CMNT  server_name $CUSTOM_DOMAIN ;
     root /appsmith-stacks/data/certificate/certbot;
   }
 
-  location = /supervisord-ui {
-    return 301 /supervisord-ui/;
+  location = /supervisor {
+    return 301 /supervisor/;
   }
 
-  location /supervisord-ui/ {
+  location /supervisor/ {
     proxy_http_version 1.1;
     proxy_buffering     off;
     proxy_max_temp_file_size 0;
     proxy_redirect     off;
-    proxy_set_header   Host             \$http_host/supervisord-ui/;
+    proxy_set_header   Host             \$http_host/supervisor/;
     proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
     proxy_set_header   Connection       "";
     proxy_pass http://localhost:9001/;
@@ -49,8 +49,8 @@ $MONITORING_CMNT    return 301 /monitoring/;
 $MONITORING_CMNT  }
 $MONITORING_CMNT
 $MONITORING_CMNT  location /monitoring/ {
-$MONITORING_CMNT    proxy_set_header X-Forwarded-Host \$host;
-$MONITORING_CMNT    proxy_set_header X-Forwarded-Server \$host;
+$MONITORING_CMNT    proxy_set_header X-Forwarded-Host \$http_host/monitoring/;
+$MONITORING_CMNT    proxy_set_header X-Forwarded-Server \$http_host/monitoring;
 $MONITORING_CMNT    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 $MONITORING_CMNT    proxy_pass http://localhost:19999/;
 $MONITORING_CMNT    proxy_http_version 1.1;
@@ -58,7 +58,7 @@ $MONITORING_CMNT    proxy_pass_request_headers on;
 $MONITORING_CMNT    proxy_set_header Connection "keep-alive";
 $MONITORING_CMNT    proxy_store off;
 $MONITORING_CMNT    auth_basic "Protected";
-$MONITORING_CMNT    auth_basic_user_file passwords;
+$MONITORING_CMNT    auth_basic_user_file /etc/nginx/passwords;
 $MONITORING_CMNT    gzip on;
 $MONITORING_CMNT    gzip_proxied any;
 $MONITORING_CMNT    gzip_types *;		
@@ -92,8 +92,8 @@ $MONITORING_CMNT  }
     sub_filter __APPSMITH_RECAPTCHA_SECRET_KEY__ '\${APPSMITH_RECAPTCHA_SECRET_KEY}';
     sub_filter __APPSMITH_RECAPTCHA_ENABLED__ '\${APPSMITH_RECAPTCHA_ENABLED}';
 
-    if (\$http_referer ~ "^.*/supervisord-ui"){
-      return 301 /supervisord-ui/\$request_uri;
+    if (\$http_referer ~ "^.*/supervisor"){
+      return 301 /supervisor/\$request_uri;
     }	
   }
 
@@ -133,12 +133,12 @@ $NGINX_SSL_CMNT
 $NGINX_SSL_CMNT    include /appsmith-stacks/data/certificate/conf/options-ssl-nginx.conf;
 $NGINX_SSL_CMNT    ssl_dhparam /appsmith-stacks/data/certificate/conf/ssl-dhparams.pem;
 $NGINX_SSL_CMNT
-$NGINX_SSL_CMNT  	 location /supervisord-ui/ {
+$NGINX_SSL_CMNT  	 location /supervisor/ {
 $NGINX_SSL_CMNT    	   proxy_http_version 1.1;
 $NGINX_SSL_CMNT    	   proxy_buffering     off;
 $NGINX_SSL_CMNT    	   proxy_max_temp_file_size 0;
 $NGINX_SSL_CMNT    	   proxy_redirect     off;
-$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$http_host/supervisord-ui/;
+$NGINX_SSL_CMNT    	   proxy_set_header   Host             \$http_host/supervisor/;
 $NGINX_SSL_CMNT    	   proxy_set_header   X-Real-IP        \$remote_addr;
 $NGINX_SSL_CMNT   	   proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
 $NGINX_SSL_CMNT    	   proxy_set_header   Connection       "";

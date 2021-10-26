@@ -181,6 +181,7 @@ configure_netdata() {
 		bash "/opt/appsmith/templates/health_alarm_notify.conf.sh" "$APPSMITH_MAIL_FROM" "$APPSMITH_REPLY_TO" > "$NETDATA_CONF_PATH/health_alarm_notify.conf"
 		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/var/cache/netdata/.msmtprc"
 		chown netdata:netdata "/var/cache/netdata/.msmtprc"
+		chown netdata:netdata -R "/var/lib/netdata/www/"
 		chmod 600 "/var/cache/netdata/.msmtprc"
 	fi
 
@@ -243,7 +244,7 @@ if [[ -z "${APPSMITH_RECAPTCHA_SITE_KEY}" ]] || [[ -z "${APPSMITH_RECAPTCHA_SECR
 fi
 
 echo "Generating Basic Authentication file"
-printf "$BASIC_AUTH_USER:$(openssl passwd -apr1 $BASIC_AUTH_PASSWORD)" > /etc/nginx/passwords
+printf "$APPSMITH_BASIC_USER:$(openssl passwd -apr1 $APPSMITH_BASIC_PASSWORD)" > /etc/nginx/passwords
 
 # Main Section
 if [[ -z "${DYNO}" ]]; then
