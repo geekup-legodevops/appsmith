@@ -38,35 +38,35 @@ check_initialized_db() {
 }
 
 init_mongodb() {
-  echo "Init database"
-  MONGO_DB_PATH="/appsmith-stacks/data/mongodb"
-  MONGO_LOG_PATH="$MONGO_DB_PATH/log"
-  MONGO_DB_KEY="$MONGO_DB_PATH/key"
-  mkdir -p "$MONGO_DB_PATH"
-  touch "$MONGO_LOG_PATH"
+	echo "Init database"
+	MONGO_DB_PATH="/appsmith-stacks/data/mongodb"
+	MONGO_LOG_PATH="$MONGO_DB_PATH/log"
+	MONGO_DB_KEY="$MONGO_DB_PATH/key"
+	mkdir -p "$MONGO_DB_PATH"
+	touch "$MONGO_LOG_PATH"
 
-  check_initialized_db
+	check_initialized_db
 
-  if [[ $shouldPerformInitdb -gt 0 ]]; then
-    # Start installed MongoDB service - Dependencies Layer
-    mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH"
-    echo "Waiting 10s for mongodb init"
-    sleep 10
-    bash "/opt/appsmith/templates/mongo-init.js.sh" "$MONGO_INITDB_ROOT_USERNAME" "$MONGO_INITDB_ROOT_PASSWORD" >"/appsmith-stacks/configuration/mongo-init.js"
-    mongo "127.0.0.1/${MONGO_INITDB_DATABASE}" /appsmith-stacks/configuration/mongo-init.js
-    echo "Seeding db done"
+	if [[ $shouldPerformInitdb -gt 0 ]]; then
+		# Start installed MongoDB service - Dependencies Layer
+		mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH"
+		echo "Waiting 10s for mongodb init"
+		sleep 10
+		bash "/opt/appsmith/templates/mongo-init.js.sh" "$MONGO_INITDB_ROOT_USERNAME" "$MONGO_INITDB_ROOT_PASSWORD" "$MONGO_INITDB_DATABASE" >"/appsmith-stacks/configuration/mongo-init.js"
+		mongo "127.0.0.1/${MONGO_INITDB_DATABASE}" /appsmith-stacks/configuration/mongo-init.js
+		echo "Seeding db done"
 
-    echo "Enable replica set"
-    mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
-    echo "Fork process"
-    openssl rand -base64 756 >"$MONGO_DB_KEY"
-    chmod go-rwx,u-wx "$MONGO_DB_KEY"
-    mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" --replSet mr1 --keyFile "$MONGO_DB_KEY" --bind_ip localhost
-    echo "Waiting 10s for mongodb init with replica set"
-    sleep 10
-    mongo "$APPSMITH_MONGODB_URI" --eval 'rs.initiate()'
-    mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
-  fi
+		echo "Enable replica set"
+		mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
+		echo "Fork process"
+		openssl rand -base64 756 >"$MONGO_DB_KEY"
+		chmod go-rwx,u-wx "$MONGO_DB_KEY"
+		mongod --fork --port 27017 --dbpath "$MONGO_DB_PATH" --logpath "$MONGO_LOG_PATH" --replSet mr1 --keyFile "$MONGO_DB_KEY" --bind_ip localhost
+		echo "Waiting 10s for mongodb init with replica set"
+		sleep 10
+		mongo "$APPSMITH_MONGODB_URI" --eval 'rs.initiate()'
+		mongod --dbpath "$MONGO_DB_PATH" --shutdown || true
+	fi
 }
 
 init_ssl_cert() {
@@ -85,8 +85,8 @@ init_ssl_cert() {
     echo
   fi
 
-  echo "Re-generating nginx config template with domain"
-  bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" >"/etc/nginx/conf.d/nginx_app.conf.template"
+	echo "Re-generating nginx config template with domain"
+	bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" "$MONITORING_ENABLED" >"/etc/nginx/conf.d/nginx_app.conf.template"
 
   echo "Generating nginx configuration"
   cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' >/etc/nginx/sites-available/default
@@ -135,17 +135,18 @@ configure_ssl() {
   mkdir -p /appsmith-stacks/letsencrypt
   ln -s /appsmith-stacks/letsencrypt /etc/letsencrypt
 
-  echo "Generating nginx config template without domain"
-  bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/nginx/conf.d/nginx_app.conf.template"
+	echo "Generating nginx config template without domain"
+	bash "/opt/appsmith/templates/nginx_app.conf.sh" "$NGINX_SSL_CMNT" "$APPSMITH_CUSTOM_DOMAIN" "$MONITORING_ENABLED" > "/etc/nginx/conf.d/nginx_app.conf.template"
 
   echo "Generating nginx configuration"
   cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
   nginx
 
-  if [[ -n "${APPSMITH_CUSTOM_DOMAIN}" ]] && [[ -z "${DYNO}" ]]; then
-    init_ssl_cert "$APPSMITH_CUSTOM_DOMAIN"
-  fi
-  nginx -s stop
+	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
+		init_ssl_cert "$APPSMITH_CUSTOM_DOMAIN"
+		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "/etc/netdata/go.d/x509check.conf"
+	fi
+	nginx -s stop
 }
 
 configure_supervisord() {
@@ -155,6 +156,9 @@ configure_supervisord() {
   fi
 
   cp -f "$SUPERVISORD_CONF_PATH/application_process/"{backend,rts,editor}.conf /etc/supervisor/conf.d/
+  if [[ "$MONITORING_ENABLED" = "true" ]]; then
+		cp  "$SUPERVISORD_CONF_PATH/netdata.conf" /etc/supervisor/conf.d/
+	fi
   if [[ -z "${DYNO}" ]]; then
     cp -f "$SUPERVISORD_CONF_PATH/application_process/cron.conf" /etc/supervisor/conf.d
     if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:$MONGO_INITDB_ROOT_PASSWORD@localhost/appsmith" ]]; then
@@ -166,16 +170,42 @@ configure_supervisord() {
   fi
 }
 
+configure_netdata() {
+	echo "Configure netdata"
+	NETDATA_CONF_PATH="/etc/netdata"
+
+	echo "$APPSMITH_MAIL_ENABLED"
+
+	if [[ "$APPSMITH_MAIL_ENABLED" = "true" ]]; then
+		echo "Configure email"
+		bash "/opt/appsmith/templates/health_alarm_notify.conf.sh" "$APPSMITH_MAIL_FROM" "$APPSMITH_REPLY_TO" > "$NETDATA_CONF_PATH/health_alarm_notify.conf"
+		bash "/opt/appsmith/templates/msmtprc.sh" "$APPSMITH_MAIL_HOST" "$APPSMITH_MAIL_PORT" "$APPSMITH_MAIL_USERNAME" "$APPSMITH_MAIL_PASSWORD" > "/var/cache/netdata/.msmtprc"
+		chown netdata:netdata "/var/cache/netdata/.msmtprc"
+		chmod 600 "/var/cache/netdata/.msmtprc"
+	fi
+
+	if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
+		bash "/opt/appsmith/templates/x509check.conf.sh" "$APPSMITH_CUSTOM_DOMAIN" > "$NETDATA_CONF_PATH/go.d/x509check.conf"
+	fi
+
+	bash "/opt/appsmith/templates/redis.conf.sh" "$APPSMITH_REDIS_URL" > "$NETDATA_CONF_PATH/go.d/redis.conf"
+	bash "/opt/appsmith/templates/mongodb.conf.sh" "$APPSMITH_MONGODB_URI" > "$NETDATA_CONF_PATH/python.d/mongodb.conf"
+
+	echo "Remove default alarms"
+	rm -f "/usr/lib/netdata/conf.d/health.d/"*
+}
+
 echo 'Checking configuration file'
 CONF_PATH="/appsmith-stacks/configuration"
 ENV_PATH="$CONF_PATH/docker.env"
 if ! [[ -e "$ENV_PATH" ]]; then
-  echo "Generating default configuration file"
-  mkdir -p "$CONF_PATH"
-  AUTO_GEN_MONGO_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-  AUTO_GEN_ENCRYPTION_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-  AUTO_GEN_ENCRYPTION_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
-  bash "/opt/appsmith/templates/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" > "$ENV_PATH"
+	echo "Generating default configuration file"
+	mkdir -p "$CONF_PATH"
+	AUTO_GEN_MONGO_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	AUTO_GEN_ENCRYPTION_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	AUTO_GEN_ENCRYPTION_SALT=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	AUTO_GEN_AUTH_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 13 ; echo '')
+	bash "/opt/appsmith/templates/docker.env.sh" "$AUTO_GEN_MONGO_PASSWORD" "$AUTO_GEN_ENCRYPTION_PASSWORD" "$AUTO_GEN_ENCRYPTION_SALT" "$AUTO_GEN_AUTH_PASSWORD" > "$ENV_PATH"
 fi
 
 if [[ -f "$ENV_PATH" ]]; then
@@ -212,6 +242,9 @@ if [[ -z "${APPSMITH_RECAPTCHA_SITE_KEY}" ]] || [[ -z "${APPSMITH_RECAPTCHA_SECR
   unset APPSMITH_RECAPTCHA_ENABLED
 fi
 
+echo "Generating Basic Authentication file"
+printf "$BASIC_AUTH_USER:$(openssl passwd -apr1 $BASIC_AUTH_PASSWORD)" > /etc/nginx/passwords
+
 # Main Section
 if [[ -z "${DYNO}" ]]; then
   init_mongodb
@@ -220,6 +253,7 @@ get_maximum_heap
 setup_backend_cmd
 configure_ssl
 configure_supervisord
+configure_netdata
 
 # Ensure the restore path exists in the container, so an archive can be copied to it, if need be.
 mkdir -p /appsmith-stacks/data/{backup,restore}
