@@ -21,6 +21,10 @@
         "postdeploy" : "/analytics.sh"
     },
     "env": {
+			"APPSMITH_BASIC_PASSWORD": {
+        "description": "Your basic authentication password. This data will be used to access monitoring & process management tools in the system",
+        "value": ""
+      },
       "APPSMITH_MONGODB_URI": {
         "description": "Your Mongo Database URI. Since Heroku doesn't support a managed MongoDB instance, you'll have to create a Mongo DB instance on another service such as https://cloud.mongodb.com",
         "value": ""
