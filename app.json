@@ -17,9 +17,6 @@
     "logo": "https://raw.githubusercontent.com/appsmithorg/appsmith/master/static/logo.png",
     "success_url": "/",
     "stack": "container",
-    "scripts": {
-        "postdeploy" : "/analytics.sh"
-    },
     "env": {
 			"APPSMITH_BASIC_PASSWORD": {
         "description": "Your basic authentication password. This data will be used to access monitoring & process management tools in the system",
