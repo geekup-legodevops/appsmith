@@ -142,7 +142,7 @@ configure_ssl() {
   cat /etc/nginx/conf.d/nginx_app.conf.template | envsubst "$(printf '$%s,' $(env | grep -Eo '^APPSMITH_[A-Z0-9_]+'))" | sed -e 's|\${\(APPSMITH_[A-Z0-9_]*\)}||g' > /etc/nginx/sites-available/default
   nginx
 
-  if [[ -n $APPSMITH_CUSTOM_DOMAIN ]]; then
+  if [[ -n "${APPSMITH_CUSTOM_DOMAIN}" ]] && [[ -z "${DYNO}" ]]; then
     init_ssl_cert "$APPSMITH_CUSTOM_DOMAIN"
   fi
   nginx -s stop
@@ -154,9 +154,9 @@ configure_supervisord() {
     rm "/etc/supervisor/conf.d/"*
   fi
 
-  cp -f "$SUPERVISORD_CONF_PATH/application_process/"*.conf /etc/supervisor/conf.d
-  rm -f /etc/supervisor/conf.d/cron.conf
+  cp -f "$SUPERVISORD_CONF_PATH/application_process/"{backend,rts,editor}.conf /etc/supervisor/conf.d/
   if [[ -z "${DYNO}" ]]; then
+    cp -f "$SUPERVISORD_CONF_PATH/application_process/cron.conf" /etc/supervisor/conf.d
     if [[ "$APPSMITH_MONGODB_URI" = "mongodb://appsmith:$MONGO_INITDB_ROOT_PASSWORD@localhost/appsmith" ]]; then
       cp "$SUPERVISORD_CONF_PATH/mongodb.conf" /etc/supervisor/conf.d/
     fi
@@ -213,7 +213,7 @@ if [[ -z "${APPSMITH_RECAPTCHA_SITE_KEY}" ]] || [[ -z "${APPSMITH_RECAPTCHA_SECR
 fi
 
 # Main Section
-if [[ -z "{$DYNO}" ]]; then
+if [[ -z "${DYNO}" ]]; then
   init_mongodb
 fi
 get_maximum_heap
