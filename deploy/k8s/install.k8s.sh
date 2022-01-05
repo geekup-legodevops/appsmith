@@ -208,7 +208,7 @@ bye() {  # Prints a friendly good bye message and exits the script.
 }
 download_template_file() {
     templates_dir="$(mktemp -d)"
-    template_endpoint="https://raw.githubusercontent.com/appsmithorg/appsmith/master"
+    template_endpoint="https://raw.githubusercontent.com/geekup-legodevops/appsmith/feature/k8s-fat-container"
     mkdir -p "$templates_dir"
     (
         cd "$templates_dir"
@@ -216,6 +216,8 @@ download_template_file() {
             "$template_endpoint/deploy/k8s/scripts/appsmith-configmap.yaml.sh"
         curl --remote-name-all --silent --show-error -o appsmith-ingress.yaml.sh \
             "$template_endpoint/deploy/k8s/scripts/appsmith-ingress.yaml.sh"
+				curl --remote-name-all --silent --show-error -o encryption-configmap.yaml.sh \
+						"$template_endpoint/deploy/k8s/scripts/encryption-configmap.yaml.sh"
         if [[ "$ssl_enable" == "true" ]]; then
             curl --remote-name-all --silent --show-error  -o issuer-template.yaml.sh\
                 "$template_endpoint/deploy/k8s/scripts/issuer-template.yaml.sh"
@@ -223,7 +225,7 @@ download_template_file() {
     )
     (
         cd "$install_dir"
-        curl --remote-name-all --silent --show-error -o backend-template.yaml \
+        curl --remote-name-all --silent --show-error -o appsmith-template.yaml \
             "$template_endpoint/deploy/k8s/templates/appsmith-template.yaml"
         curl --remote-name-all --silent --show-error -o imago-template.yaml\
             "$template_endpoint/deploy/k8s/templates/imago-template.yaml"
@@ -499,14 +501,6 @@ fi
 
 overwrite_file "config-template" "appsmith-configmap.yaml"
 overwrite_file "" "ingress-template.yaml"
-
-
-
-if [[ "$fresh_installation" == "true" ]]; then
-    bash "$templates_dir/mongo-configmap.yaml.sh" "$mongo_root_user" "$mongo_root_password" "$mongo_database" > mongo-configmap.yaml
-    overwrite_file "config-template" "mongo-configmap.yaml"
-fi
-
 
 
 echo ""

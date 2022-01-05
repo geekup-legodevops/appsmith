@@ -29,7 +29,7 @@ spec:
 			spec:
 				containers:
 				- name: appsmith
-					image: appsmith/appsmith-ce
+					image: legodevops/appsmith:helm-20220105
 					ports:
 						- containerPort: 80
 					envFrom:
