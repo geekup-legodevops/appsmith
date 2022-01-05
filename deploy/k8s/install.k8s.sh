@@ -362,7 +362,7 @@ if confirm y "Is this a fresh installation?"; then
     fresh_installation="true"
     echo "Appsmith needs to create a MongoDB instance."
     mongo_protocol="mongodb://"
-    mongo_host="mongo-service"
+    mongo_host="localhost"
     mongo_database="appsmith"
 
     # We invoke functions to read the mongo credentials from the user because they MUST be non-empty
@@ -478,7 +478,7 @@ cd "$templates_dir"
 
 mkdir -p "$install_dir/config-template"
 
-mongo_uri="$mongo_protocol://$encoded_mongo_root_user:$encoded_mongo_root_password@$mongo_host/$mongo_database"
+mongo_uri="$mongo_protocol$encoded_mongo_root_user:$encoded_mongo_root_password@$mongo_host/$mongo_database"
 
 bash "$templates_dir/appsmith-configmap.yaml.sh" "$mongo_uri" "$disable_telemetry" > appsmith-configmap.yaml
 if [[ "$setup_encryption" == "true" ]]; then
