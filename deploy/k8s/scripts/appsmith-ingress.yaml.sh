@@ -20,36 +20,16 @@ if [[ "$ssl_enable" == "true" ]]; then
             - $custom_domain
           secretName: lego-tls
       backend:
-        serviceName: "appsmith-editor"
+        serviceName: "appsmith-service"
         servicePort: 80
       rules:
       - host: $custom_domain
         http:
           paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-backend-service
-              servicePort: 8080
-          - path: /oauth2
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-backend-service
-              servicePort: 8080
-          - path: /login
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-backend-service
-              servicePort: 8080
-          - path: /static
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-editor
-              servicePort: 80
           - path: /
             pathType: Prefix
             backend:
-              serviceName: appsmith-editor
+              serviceName: appsmith-service
               servicePort: 80
 EOF
 else
@@ -63,36 +43,16 @@ else
     spec:
 
       backend:
-        serviceName: "appsmith-editor"
+        serviceName: "appsmith-service"
         servicePort: 80
       rules:
       - host: $custom_domain
         http:
           paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-backend-service
-              servicePort: 8080
-          - path: /oauth2
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-backend-service
-              servicePort: 8080
-          - path: /login
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-backend-service
-              servicePort: 8080
-          - path: /static
-            pathType: Prefix
-            backend:
-              serviceName: appsmith-editor
-              servicePort: 80
           - path: /
             pathType: Prefix
             backend:
-              serviceName: appsmith-editor
+              serviceName: appsmith-service
               servicePort: 80
 EOF
 fi
