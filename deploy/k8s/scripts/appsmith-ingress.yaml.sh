@@ -5,7 +5,7 @@ ssl_enable="$2"
 
 if [[ "$ssl_enable" == "true" ]]; then
   cat <<EOF
-    apiVersion: networking.k8s.io/v1beta1
+    apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
       name: appsmith-ingress
@@ -19,40 +19,37 @@ if [[ "$ssl_enable" == "true" ]]; then
         - hosts:
             - $custom_domain
           secretName: lego-tls
-      backend:
-        serviceName: "appsmith-service"
-        servicePort: 80
       rules:
       - host: $custom_domain
         http:
           paths:
           - path: /
             pathType: Prefix
-            backend:
-              serviceName: appsmith-service
-              servicePort: 80
+						backend:
+							service:
+								name: appsmith-service
+								port:
+									number: 80
 EOF
 else
   cat << EOF
-    apiVersion: networking.k8s.io/v1beta1
+    apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
       name: appsmith-ingress
       annotations:
         kubernetes.io/ingress.class: "nginx"
     spec:
-
-      backend:
-        serviceName: "appsmith-service"
-        servicePort: 80
       rules:
       - host: $custom_domain
         http:
           paths:
           - path: /
             pathType: Prefix
-            backend:
-              serviceName: appsmith-service
-              servicePort: 80
+						backend:
+							service:
+								name: appsmith-service
+								port:
+									number: 80
 EOF
 fi

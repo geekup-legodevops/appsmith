@@ -5,8 +5,9 @@ metadata:
   labels:
     app: appsmith-service
 spec:
+  type: ClusterIP
   selector:
-    app: appsmith-service
+    app: appsmith
   ports:
   - port: 80
     targetPort: 80
