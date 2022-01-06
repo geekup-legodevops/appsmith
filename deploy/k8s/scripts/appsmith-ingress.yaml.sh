@@ -25,11 +25,11 @@ if [[ "$ssl_enable" == "true" ]]; then
           paths:
           - path: /
             pathType: Prefix
-						backend:
-							service:
-								name: appsmith-service
-								port:
-									number: 80
+            backend:
+              service:
+                name: appsmith-service
+                port:
+                  number: 80
 EOF
 else
   cat << EOF
@@ -46,10 +46,10 @@ else
           paths:
           - path: /
             pathType: Prefix
-						backend:
-							service:
-								name: appsmith-service
-								port:
-									number: 80
+            backend:
+              service:
+                name: appsmith-service
+                port:
+                  number: 80
 EOF
 fi
