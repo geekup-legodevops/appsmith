@@ -243,7 +243,7 @@ install_certmanager() {
     if [ -z "${cert_manager_ns}" ]; then
         echo "Installing Cert-manager";
         # cert-manager installation document: https://cert-manager.io/docs/installation/kubernetes/
-        kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.3/cert-manager.yaml
+        kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
         sleep 30; # Wait 30s for cert-manger ready
     else
         echo "Cert-manager already install"
