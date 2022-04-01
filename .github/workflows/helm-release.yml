@@ -1,0 +1,50 @@
+name: Appsmith Helm Release Workflow
+
+# This workflow package & publish new version for Helm chart to S3 bucket
+# This workflow is automatically triggered when merging PR with target branch is `master`
+on:
+  push:
+    branches:
+      - "feature/helm-release-workflow"
+
+  pull_request_target:
+    types:
+      - closed
+    branches:
+      - "master"
+    paths:
+      - "deploy/helm"
+
+defaults:
+  run:
+    working-directory: deploy/helm
+    shell: bash
+
+jobs:
+  # The workflow only runs after PR had been merged
+  if_merged:
+    if: github.event.pull_request_merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.6.3
+
+      - name: Print 
+        run: |
+          echo $AWS_ACCESS_KEY_ID
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+
+      - name: Configure AWS Credentials
+        uses: aws-action/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Checkout the code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
