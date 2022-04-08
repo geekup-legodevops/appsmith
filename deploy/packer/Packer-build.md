@@ -33,5 +33,5 @@ cd deploy/packer
 - To initialize a new instance for Packer to provision on it, there is a need on configuring the `VPC` and `Subnet`. Please access to your AWS [VPC dashboard](https://console.aws.amazon.com/vpc/home) and check for your `VPC ID` and `Subnet ID` which will be used later in run `packer build` command
 - Run Packer build
 ```
-packer build -var 'vpc_id=<your-vpc-id>' -var 'subnet_id=<your-subnet-id>' -var 'token=<your-digitalocean-access-token>' template.json.pkr.hcl
+packer build -var 'vpc_id=<your-vpc-id>' -var 'subnet_id=<your-subnet-id>' template.json.pkr.hcl
 ```
