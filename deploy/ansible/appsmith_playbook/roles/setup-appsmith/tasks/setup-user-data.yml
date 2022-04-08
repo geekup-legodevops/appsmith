@@ -1,0 +1,9 @@
+---
+- name: setup runtime user data
+  copy:
+    src: ../templates/user-data.sh
+    dest: /var/lib/cloud/scripts/per-instance
+    mode: 0755
+    owner: appsmith
+    group: appsmith
+  become: yes

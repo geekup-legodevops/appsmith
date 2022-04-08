@@ -1,0 +1,26 @@
+---
+- name: setup runtime directory
+  copy:
+    src: ../templates/appsmith/
+    dest: /home/appsmith/appsmith/
+    mode: 0755
+    owner: appsmith
+    group: appsmith
+  become: yes
+
+- name: create reboot entry job
+  cron:
+    name: "appsmith job"
+    special_time: reboot
+    user: appsmith
+    job: "/home/appsmith/appsmith/scripts/boot.sh"
+
+- name: setup ssh key for appsmith user
+  copy:
+    src: ../templates/init-ssh.sh
+    dest: /var/lib/cloud/scripts/per-instance
+    mode: 0755
+    owner: appsmith
+    group: appsmith
+  become: yes
+
