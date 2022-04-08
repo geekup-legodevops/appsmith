@@ -4,14 +4,14 @@
   become: yes
 
 - name: create group appsmith
-  group: name=appsmith state=present
+  group: name={{ cloud_user }} state=present
   become: yes
 
 - name: create user appsmith
-  user: name=appsmith groups="appsmith"
+  user: name={{ cloud_user }} groups={{ cloud_group }}
   become: yes
 
-- name: add sudoers group for user appsmith
+- name: add sudoers group for user {{ cloud_user }}
   copy:
     content: 'appsmith ALL=(ALL) NOPASSWD: ALL'
     dest: /etc/sudoers.d/appsmith
