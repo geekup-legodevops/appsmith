@@ -30,3 +30,4 @@ install_dir: '~/appsmith'
 # Packer cloud user for AMI and IMAGE
 cloud_user: appsmith
 cloud_group: appsmith
+cloud_directory: '/home/appsmith/appsmith'
