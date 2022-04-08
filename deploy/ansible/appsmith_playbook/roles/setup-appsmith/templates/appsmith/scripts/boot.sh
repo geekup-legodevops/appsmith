@@ -15,7 +15,7 @@ start_docker() {
 }
 start_docker
 
-install_dir="/home/appsmith/appsmith"
+install_dir="{{ cloud_directory }}"
 # Check if Apsmith setup, if not create run setup up script
 if [ ! -f $install_dir/docker-compose.yml ]; then
     echo ""

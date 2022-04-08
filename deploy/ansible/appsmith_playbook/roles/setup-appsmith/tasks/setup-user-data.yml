@@ -4,6 +4,6 @@
     src: ../templates/user-data.sh
     dest: /var/lib/cloud/scripts/per-instance
     mode: 0755
-    owner: appsmith
-    group: appsmith
+    owner: "{{ cloud_user }}"
+    group: "{{ cloud_group }}"
   become: yes

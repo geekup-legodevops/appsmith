@@ -46,8 +46,9 @@ urlencode() {
     # urlencode <string>
     local old_lc_collate="$LC_COLLATE"
     LC_COLLATE=C
-
+    {% raw %}
     local length="${#1}"
+    {% endraw %}
     for (( i = 0; i < length; i++ )); do
         local c="${1:i:1}"
         case $c in
