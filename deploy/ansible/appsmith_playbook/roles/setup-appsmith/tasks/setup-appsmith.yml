@@ -7,7 +7,7 @@
 
 - name: Download docker-compose.yml
   get_url:
-    url: https://raw.githubusercontent.com/appsmithorg/appsmith/release/deploy/aws_ami/docker-compose.yml
+    url: https://raw.githubusercontent.com/appsmithorg/appsmith/master/deploy/aws_ami/docker-compose.yml
     dest: "{{ install_dir }}"
     mode: 0440
   when: template_file.stat.exists == false
