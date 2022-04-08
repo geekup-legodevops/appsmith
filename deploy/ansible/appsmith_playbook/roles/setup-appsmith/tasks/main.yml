@@ -18,9 +18,9 @@
     msg: "Appsmith may be installed but not work properly. Please check on server (IP: {{ansible_host}})"
   when: container_running.stdout == 'true'
 
-- name: Setup cloud init config
+- name: setup init config
   include_tasks:
-    file: "setup-cloud-init.yml"
+    file: "setup-init-config.yml"
     apply:
       tags: packer
   tags: packer

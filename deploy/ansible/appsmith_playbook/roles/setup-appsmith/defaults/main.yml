@@ -26,3 +26,7 @@ docker_users: []
 
 template_file_name: 'docker-compose.yml'
 install_dir: '~/appsmith'
+
+# Packer cloud user for AMI and IMAGE
+cloud_user: appsmith
+cloud_group: appsmith
