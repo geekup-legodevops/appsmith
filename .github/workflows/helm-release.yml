@@ -23,7 +23,7 @@ defaults:
 jobs:
   # The workflow only runs after PR had been merged
   if_merged:
-    if: github.event.pull_request_merged == true
+    # if: github.event.pull_request_merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Setup Helm
