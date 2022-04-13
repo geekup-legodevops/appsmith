@@ -55,10 +55,10 @@ jobs:
 
       - name: Retrieve Helm version
         id: helm-version
-        uses: KJ002/read-yaml@main
+        uses: CumulusDS/get-yaml-paths-action@v0.1.0
         with:
           file: "Chart.yaml"
-          key-path: '["version"]'
+          helm-version: version
 
       - name: Print out version
-        run: echo "${{ steps.helm-version.outputs.data }}"
+        run: echo "${{ steps.helm-version }}"
