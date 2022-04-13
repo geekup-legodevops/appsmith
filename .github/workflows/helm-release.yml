@@ -50,6 +50,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Test
+        run: pwd
+
       - name: Retrieve Helm version
         id: helm-version
         uses: KJ002/read-yaml@1.6
