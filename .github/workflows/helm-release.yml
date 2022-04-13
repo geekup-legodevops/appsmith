@@ -51,7 +51,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Test
-        run: pwd
+        run: ls
 
       - name: Retrieve Helm version
         id: helm-version
