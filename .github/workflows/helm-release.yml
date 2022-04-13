@@ -15,16 +15,16 @@ on:
     paths:
       - "deploy/helm"
 
-defaults:
-  run:
-    working-directory: deploy/helm
-    shell: bash
 
 jobs:
   # The workflow only runs after PR had been merged
   if_merged:
     # if: github.event.pull_request_merged == true
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deploy/helm
+        shell: bash
     steps:
 
       - name: Checkout the code
@@ -57,7 +57,7 @@ jobs:
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "Chart.yaml"
+          file: $PWD/Chart.yaml
           key-path: '["version"]'
 
       - name: Print out version
