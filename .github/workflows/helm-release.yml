@@ -57,7 +57,7 @@ jobs:
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "./Chart.yaml"
+          file: "Chart.yaml"
           key-path: '["version"]'
 
       - name: Print out version
