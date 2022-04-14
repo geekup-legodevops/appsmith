@@ -194,6 +194,8 @@ configure_supervisord() {
   fi
 }
 
+echo "I am testing helm workflow"
+
 # This is a workaround to get Redis working on diffent memory pagesize
 # https://github.com/appsmithorg/appsmith/issues/11773
 check_redis_compatible_page_size() {
