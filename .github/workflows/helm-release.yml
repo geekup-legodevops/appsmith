@@ -47,13 +47,13 @@ jobs:
 
       - name: Check working space
         run: |
-          echo ${{ github.action_path }}
+          echo ${{ github.workspace }}/${{ jobs.if_merged.default.run.working-directory }}
 
       - name: Retrieve Helm version
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "${{ github.action_path }}/Chart.yaml"
+          file: "${{ github.workspace }}/Chart.yaml"
           key-path: '["version"]'
 
       - name: Check existing Helm version
