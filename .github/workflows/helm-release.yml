@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
-      HELM_DIRECTORY: ./deploy/helm
+      HELM_DIRECTORY: deploy/helm
     defaults:
       run:
-        working-directory: ${HELM_DIRECTORY}
+        working-directory: ${{ env.HELM_DIRECTORY }}
         shell: bash
     steps:
 
