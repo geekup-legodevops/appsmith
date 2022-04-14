@@ -24,6 +24,7 @@ jobs:
     continue-on-error: true
     env:
       HELM_DIRECTORY: deploy/helm
+      CHART_PATH: ${{ env.HELM_DIRECTORY }}/Chart.yaml
     defaults:
       run:
         working-directory: ${{ env.HELM_DIRECTORY }}
@@ -49,13 +50,13 @@ jobs:
 
       - name: Check working space
         run: |
-          echo ${{ github.workspace }}/${{ env.HELM_DIRECTORY }}
+          echo ${{ github.workspace }}/${{ env.CHART_PATH }}
 
       - name: Retrieve Helm version
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "${{ github.workspace }}/${{ env.HELM_DIRECTORY }}/Chart.yaml"
+          file: "${{ github.workspace }}/${{ env.CHART_PATH }}"
           key-path: '["version"]'
 
       - name: Check existing Helm version
