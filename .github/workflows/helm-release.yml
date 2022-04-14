@@ -47,13 +47,13 @@ jobs:
 
       - name: Check working space
         run: |
-          echo ${{ github.workspace }}
+          echo ${{ github.path }}
 
       - name: Retrieve Helm version
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "${{ github.workspace }}/Chart.yaml"
+          file: "${{ github.path }}/Chart.yaml"
           key-path: '["version"]'
 
       - name: Check existing Helm version
