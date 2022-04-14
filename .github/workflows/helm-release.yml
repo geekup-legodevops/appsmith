@@ -76,9 +76,8 @@ jobs:
       - name: Publish Helm
         if: steps.version-check.outputs.exist_status == 'false'
         run: |
-          echo 'Continue workflow' 
-          echo 'Package Helm version'
-          echo 'Download index.yaml'
-          echo 'Index Helm version'
-          echo 'Upload Helm package'
-          echo 'Upload index.yaml'
+          helm package .
+          aws s3 cp s3://helm-appsmith.geekup.io/index.yaml .
+          helm repo index . --url http://helm-appsmith.geekup.io --merge index.yaml
+          aws s3 cp ./appsmith-${{ steps.helm-version.outputs.data }}.tgz s3://helm-appsmith.geekup.io 
+          aws s3 cp index.yaml s3://helm-appsmith.geekup.io 
