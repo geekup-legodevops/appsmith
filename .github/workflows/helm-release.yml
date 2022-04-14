@@ -49,7 +49,7 @@ jobs:
 
       - name: Check working space
         run: |
-          echo "${{ github.workspace }}/${HELM_DIRECTORY}"
+          echo ${{ github.workspace }}/${{ env.HELM_DIRECTORY }}
 
       - name: Retrieve Helm version
         id: helm-version
