@@ -47,7 +47,7 @@ jobs:
 
       - name: Check working space
         run: |
-          echo ${{ github.workspace }}/${{ jobs.if_merged.default.run.working-directory }}
+          echo ${{ github.workspace }}/${{ defaults.run.working-directory }}
 
       - name: Retrieve Helm version
         id: helm-version
