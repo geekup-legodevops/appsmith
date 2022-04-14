@@ -49,7 +49,7 @@ jobs:
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "${{ GITHUB_WORKSPACE }}/Chart.yaml"
+          file: "${{ env.GITHUB_WORKSPACE }}/Chart.yaml"
           key-path: '["version"]'
 
       - name: Check existing Helm version
