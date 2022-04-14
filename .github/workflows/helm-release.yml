@@ -21,6 +21,7 @@ jobs:
   if_merged:
     # if: github.event.pull_request_merged == true
     runs-on: ubuntu-latest
+    continue-on-error: true
     defaults:
       run:
         working-directory: deploy/helm
