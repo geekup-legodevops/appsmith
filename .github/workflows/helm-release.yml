@@ -55,7 +55,7 @@ jobs:
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "${{ github.workspace }}/${HELM_DIRECTORY}/Chart.yaml"
+          file: "${{ github.workspace }}/${{ env.HELM_DIRECTORY }}/Chart.yaml"
           key-path: '["version"]'
 
       - name: Check existing Helm version
