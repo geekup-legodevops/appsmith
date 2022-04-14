@@ -67,7 +67,7 @@ jobs:
       - name: Check existing Helm version
         id: version-check
         run: |
-          if aws s3 ls s3://helm.appsmith.com | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz; then
+          if aws s3 ls s3://helm-test.appsmith.com | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz; then
             echo "::set-output name=exist_status::true"
           else
             echo "::set-output name=exist_status::false"
