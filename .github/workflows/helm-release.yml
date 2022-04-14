@@ -10,7 +10,7 @@ on:
     branches:
       - "master-test"
     paths:
-      - "deploy/helm"
+      - "deploy/helm/**"
 
 
 jobs:
