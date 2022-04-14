@@ -71,4 +71,7 @@ jobs:
         
       - name: Print out success
         if: failure() && steps.version-check.outcome == 'failure'
-        run: echo 'No Helm version found' 
+        run: echo 'No Helm version found'
+
+      - name: Continue workflow
+        run: echo 'Continue workflow' 
