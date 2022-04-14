@@ -67,10 +67,14 @@ jobs:
       - name: Check existing Helm version
         id: version-check
         run: |
-          aws s3 ls s3://helm.appsmith.com | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz || true
+          if aws s3 ls s3://helm.appsmith.com | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz; then
+            echo "::set-output name=exist_status::true"
+          else
+            echo "::set-output name=exist_status::false"
+          fi
 
       - name: Publish Helm
-        if: failure() && steps.version-check.outcome == 'failure'
+        if: steps.version-check.outputs.exist_status == 'false'
         run: |
           echo 'Continue workflow' 
           echo 'Package Helm version'
