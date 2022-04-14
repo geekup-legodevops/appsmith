@@ -38,12 +38,6 @@ jobs:
         with:
           version: v3.6.3
 
-      - name: Print 
-        run: |
-          echo $AWS_ACCESS_KEY_ID
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-
       - name: Configure AWS Credentials
         uses: aws-action/configure-aws-credentials@v1
         with:
@@ -51,30 +45,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Test
-        run: ls
-
       - name: Retrieve Helm version
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "/home/runner/work/appsmith/appsmith/deploy/helm/Chart.yaml"
+          file: "${{ GITHUB_WORKSPACE }}/Chart.yaml"
           key-path: '["version"]'
-
-      - name: Print out version
-        run: echo "${{ steps.helm-version.outputs.data }}"
 
       - name: Check existing Helm version
         id: version-check
         run: |
           if aws s3 ls s3://${{ secrets.S3_DOMAIN }} | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz; then
-            echo "::set-output name=exist_status::true"
+            echo "::set-output name=version_exist::true"
           else
-            echo "::set-output name=exist_status::false"
+            echo "::set-output name=version_exist::false"
           fi
 
       - name: Publish Helm
-        if: steps.version-check.outputs.exist_status == 'false'
+        if: steps.version-check.outputs.version_exist == 'false'
         run: |
           helm package .
           aws s3 cp s3://${{ secrets.S3_DOMAIN }}/index.yaml .
