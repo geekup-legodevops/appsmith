@@ -22,9 +22,11 @@ jobs:
     # if: github.event.pull_request_merged == true
     runs-on: ubuntu-latest
     continue-on-error: true
+    env:
+      HELM_DIRECTORY: ./deploy/helm
     defaults:
       run:
-        working-directory: ./deploy/helm
+        working-directory: ${HELM_DIRECTORY}
         shell: bash
     steps:
 
@@ -47,13 +49,13 @@ jobs:
 
       - name: Check working space
         run: |
-          echo ${{ github.workspace }}/${{ jobs.if_merged.defaults.run.working-directory }}
+          echo ${{ github.workspace }}/${HELM_DIRECTORY}
 
       - name: Retrieve Helm version
         id: helm-version
         uses: KJ002/read-yaml@1.6
         with:
-          file: "${{ github.workspace }}/Chart.yaml"
+          file: "${{ github.workspace }}/${HELM_DIRECTORY}/Chart.yaml"
           key-path: '["version"]'
 
       - name: Check existing Helm version
