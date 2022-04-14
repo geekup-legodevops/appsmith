@@ -47,7 +47,7 @@ jobs:
 
       - name: Check working space
         run: |
-          echo ${{ env.GITHUB_WORKSPACE }}
+          echo $GITHUB_WORKSPACE
 
       - name: Retrieve Helm version
         id: helm-version
