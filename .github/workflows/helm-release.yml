@@ -24,7 +24,7 @@ jobs:
     continue-on-error: true
     env:
       HELM_DIRECTORY: deploy/helm
-      CHART_PATH: ${{ env.HELM_DIRECTORY }}/Chart.yaml
+      CHART_PATH: deploy/helm/Chart.yaml
     defaults:
       run:
         working-directory: ${{ env.HELM_DIRECTORY }}
