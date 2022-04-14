@@ -66,7 +66,7 @@ jobs:
 
       - name: Check existing Helm version
         run: |
-          aws s3 ls s3://helm.appsmith.com | awk '{print $4}'
+          aws s3 ls s3://helm.appsmith.com | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz
         
       - name: Print out success
         if: success()
