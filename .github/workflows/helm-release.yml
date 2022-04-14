@@ -57,7 +57,7 @@ jobs:
         id: helm-version
         uses: CumulusDS/get-yaml-paths-action@v0.1.0
         with:
-          file: ./Chart.yaml
+          file: "/home/runner/work/appsmith/appsmith/deploy/helm/Chart.yaml"
 
       - name: Print out version
         run: echo "${{ steps.helm-version }}"
