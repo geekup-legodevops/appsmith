@@ -77,7 +77,7 @@ jobs:
         if: steps.version-check.outputs.exist_status == 'false'
         run: |
           helm package .
-          aws s3 cp s3://helm-appsmith.geekup.io/index.yaml .
-          helm repo index . --url http://helm-appsmith.geekup.io --merge index.yaml
-          aws s3 cp ./appsmith-${{ steps.helm-version.outputs.data }}.tgz s3://helm-appsmith.geekup.io 
-          aws s3 cp index.yaml s3://helm-appsmith.geekup.io 
+          aws s3 cp s3://helm-test.appsmith.com/index.yaml .
+          helm repo index . --url http://helm-test.appsmith.com --merge index.yaml
+          aws s3 cp ./appsmith-${{ steps.helm-version.outputs.data }}.tgz s3://helm-test.appsmith.com 
+          aws s3 cp index.yaml s3://helm-test.appsmith.com 
