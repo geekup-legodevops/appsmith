@@ -3,15 +3,12 @@ name: Appsmith Helm Release Workflow
 # This workflow package & publish new version for Helm chart to S3 bucket
 # This workflow is automatically triggered when merging PR with target branch is `master`
 on:
-  push:
-    branches:
-      - "feature/helm-release-workflow"
 
   pull_request_target:
     types:
       - closed
     branches:
-      - "master"
+      - "master-test"
     paths:
       - "deploy/helm"
 
