@@ -57,10 +57,10 @@ jobs:
         # Set flag is_duplicate_version if found Helm chart package corresponding to the version
         run: |
           scan_version_command=$(aws s3 ls s3://${{ secrets.S3_DOMAIN }} | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz)
-          if $scan_version_command; then
-            echo "::set-output name=is_duplicate_version::true"
-          else
+          if -z $scan_version_command; then
             echo "::set-output name=is_duplicate_version::false"
+          else
+            echo "::set-output name=is_duplicate_version::true"
           fi
 
       - name: Fail due to existing version in S3 bucket

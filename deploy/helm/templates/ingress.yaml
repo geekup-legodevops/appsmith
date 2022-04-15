@@ -17,9 +17,6 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   namespace: {{ include "appsmith.namespace" . }}
-  labels:
-    {{- include "appsmith.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
