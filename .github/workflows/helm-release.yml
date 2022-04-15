@@ -66,13 +66,13 @@ jobs:
       - name: Fail due to existing version in S3 bucket
         if: steps.version-check.outputs.is_duplicate_version == 'true'
         run: |
-          echo '\n ${{ steps.helm-version.outputs.data }} is already exist. Please re-check the Helm version in Chart.yaml \n'
+          echo "${{ steps.helm-version.outputs.data }} is already exist. Please re-check the Helm version in Chart.yaml"
 
       - name: Publish Helm
         # Only publish new Helm version if it does not exist in S3 bucket
         if: steps.version-check.outputs.is_duplicate_version == 'false'
         run: |
-          echo '\n Publishing new Helm chart version \n'
+          echo "Publishing new Helm chart version"
           helm package .
           aws s3 cp s3://${{ secrets.S3_DOMAIN }}/index.yaml .
           helm repo index . --url http://${{ secrets.S3_DOMAIN }} --merge index.yaml
