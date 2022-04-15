@@ -4,19 +4,18 @@ name: Appsmith Helm Release Workflow
 # This workflow is automatically triggered when merging PR with target branch is `master`
 on:
 
-  pull_request_target:
-    types:
-      - closed
+  # https://github.community/t/trigger-workflow-only-on-pull-request-merge/17359/3
+  # Merged pull request always results in a push and branch master is protected branch
+  # We can take use of 'push' action in this context 
+  push:
     branches:
-      - "master"
+      - master
     paths:
       - "deploy/helm/**"
 
 
 jobs:
-  # The workflow only runs after PR had been merged
-  if_merged:
-    # if: github.event.pull_request_merged == true
+  release:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
@@ -58,6 +57,8 @@ jobs:
 
       - name: Check existing Helm version
         id: version-check
+        # Scan the S3 bucket with the Helm version retrieved from Chart.yaml
+        # Set flag version_exist if found Helm chart package corresponding to the version
         run: |
           if aws s3 ls s3://${{ secrets.S3_DOMAIN }} | awk '{print $4}' | grep appsmith-${{ steps.helm-version.outputs.data }}.tgz; then
             echo "::set-output name=version_exist::true"
@@ -65,9 +66,19 @@ jobs:
             echo "::set-output name=version_exist::false"
           fi
 
+      - name: Fail due to existing version in S3 bucket
+        if: steps.version-check.outputs.version_exist == 'true'
+        run: |
+          echo 
+          echo "${{ steps.helm-version.outputs.data }} is already exist. Please re-check the Helm version in Chart.yaml"
+          echo
+
       - name: Publish Helm
+        # Only publish new Helm version if it does not exist in S3 bucket
         if: steps.version-check.outputs.version_exist == 'false'
         run: |
+          echo
+          echo "Publishing new Helm chart version"
           helm package .
           aws s3 cp s3://${{ secrets.S3_DOMAIN }}/index.yaml .
           helm repo index . --url http://${{ secrets.S3_DOMAIN }} --merge index.yaml
