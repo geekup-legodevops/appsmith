@@ -9,7 +9,7 @@ on:
   # We can take use of 'push' action in this context 
   push:
     branches:
-      - master
+      - master-test
     paths:
       - "deploy/helm/**"
 
